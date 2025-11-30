@@ -1,6 +1,7 @@
 # institution-management-system
-integrated systems of an institution from
+Integrated systems of an institution
 
+Systems:
 1. Enrollment System (Students Portal)
 2. Entrance Examanition System (Guidance Department)
 3. Evaluations, Grades, requirements, credentials (Registrar's Office) 
