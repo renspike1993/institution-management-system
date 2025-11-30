@@ -1,36 +1,229 @@
-{% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Login</title>
-		<script src="https://cdn.tailwindcss.com"></script>
-	</head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | School Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        }
+        
+        .floating {
+            animation: floating 3.5s ease-in-out infinite;
+        }
+        
+        @keyframes floating {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-12px);
+            }
+        }
+        
+        .input-focus:focus {
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+        
+        .btn-elegant {
+            background: rgba(255, 255, 255, 0.12);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-elegant::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn-elegant:hover::before {
+            left: 100%;
+        }
+        
+        .btn-elegant:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-6">
+    <!-- Background Elements -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-40 -right-32 w-80 h-80 bg-white/5 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-40 -left-32 w-80 h-80 bg-white/5 rounded-full blur-3xl"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-white/3 rounded-full blur-3xl"></div>
+    </div>
 
-	<body class="bg-gray-100 min-h-screen flex items-center justify-center">
-		<div class="w-full max-w-sm bg-white shadow-lg rounded-xl p-6">
-			<h3 class="text-2xl font-semibold text-center mb-4">Login</h3>
+    <!-- Login Container -->
+    <div class="w-full max-w-md relative z-10">
+        <!-- Back to Portal -->
+        <div class="text-center mb-8">
+            <a href="/" class="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors text-sm">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back to System Portal</span>
+            </a>
+        </div>
 
-			<form method="post" action="{% url 'login' %}">
-				{% csrf_token %}
+        <!-- Login Card -->
+        <div class="glass-card rounded-2xl p-8 shadow-2xl border border-white/20">
+            <!-- Logo & Header -->
+            <div class="text-center mb-8">
+                <div class="flex justify-center mb-4 floating">
+                    <div class="w-16 h-16 glass-card rounded-2xl flex items-center justify-center shadow-xl border border-white/20">
+                        <i class="fas fa-user-shield text-2xl text-white"></i>
+                    </div>
+                </div>
+                <h1 class="text-2xl font-bold text-white mb-2">Secure Login</h1>
+                <p class="text-white/70 text-sm">Enter your credentials to access the system</p>
+            </div>
 
-				<div class="w-full">
-					<label class="w-full mb-1 font-medium">Username</label>
-					{{ form.username }}
-				</div>
+            <!-- Login Form -->
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Username Field -->
+                <div class="space-y-2">
+                    <label for="id_username" class="text-white/80 text-sm font-medium flex items-center gap-2">
+                        <i class="fas fa-user text-white/60 text-xs"></i>
+                        Username
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-user text-gray-400"></i>
+                        </div>
+                        <input 
+                            type="text" 
+                            name="username" 
+                            id="id_username"
+                            class="w-full pl-10 pr-4 py-3 rounded-xl bg-white/90 text-gray-800 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition input-focus"
+                            placeholder="Enter your username"
+                            autocomplete="username"
+                            required
+                        >
+                    </div>
+                </div>
 
-				<div class="mb-3">
-					<label class="w-full">Password</label>
-					{{ form.password }}
-				</div>
-			{% if form.errors %}
-			<div class="bg-red-100 text-red-700 px-4 py-2 rounded mb-3">Invalid username or password.</div>
-			{% endif %}
+                <!-- Password Field -->
+                <div class="space-y-2">
+                    <label for="id_password" class="text-white/80 text-sm font-medium flex items-center gap-2">
+                        <i class="fas fa-lock text-white/60 text-xs"></i>
+                        Password
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-lock text-gray-400"></i>
+                        </div>
+                        <input 
+                            type="password" 
+                            name="password" 
+                            id="id_password"
+                            class="w-full pl-10 pr-4 py-3 rounded-xl bg-white/90 text-gray-800 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition input-focus"
+                            placeholder="Enter your password"
+                            autocomplete="current-password"
+                            required
+                        >
+                        <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center" id="togglePassword">
+                            <i class="fas fa-eye text-gray-400 hover:text-gray-600 cursor-pointer"></i>
+                        </button>
+                    </div>
+                </div>
 
-				<button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">Login</button>
-			</form>
-		</div>
-	</body>
+                <!-- Remember Me & Forgot Password -->
+                <div class="flex items-center justify-between text-sm">
+                    <label class="flex items-center text-white/70">
+                        <input type="checkbox" class="rounded bg-white/20 border-white/30 text-indigo-600 focus:ring-indigo-500">
+                        <span class="ml-2">Remember me</span>
+                    </label>
+                    <a href="#" class="text-white/70 hover:text-white transition-colors">
+                        Forgot password?
+                    </a>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="w-full btn-elegant text-white font-medium py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 group">
+                    <span>Sign In to System</span>
+                    <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                </button>
+
+                <!-- Error Messages -->
+                {% if form.errors %}
+                <div class="bg-red-500/20 border border-red-500/30 rounded-xl p-4">
+                    <div class="flex items-center gap-2 text-red-300 text-sm">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>Please enter a correct username and password.</span>
+                    </div>
+                </div>
+                {% endif %}
+            </form>
+
+            <!-- Additional Info -->
+            <div class="mt-8 pt-6 border-t border-white/10">
+                <div class="text-center text-white/50 text-xs">
+                    <p>Need help accessing your account?</p>
+                    <p class="mt-1">Contact system administrator at <span class="text-white/70">admin@schoolsystem.edu</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-8">
+            <div class="inline-flex items-center gap-2 text-white/50 text-sm">
+                <i class="fas fa-user-shield"></i>
+                <span>Rene M. Cabuhan II • System Developer</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle password visibility
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('id_password');
+            const icon = this.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+
+        // Add floating label effect on focus
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.parentElement.querySelector('label').classList.add('text-white');
+            });
+            
+            input.addEventListener('blur', function() {
+                if (!this.value) {
+                    this.parentElement.parentElement.querySelector('label').classList.remove('text-white');
+                }
+            });
+        });
+    </script>
+</body>
 </html>

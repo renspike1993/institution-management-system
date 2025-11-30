@@ -95,11 +95,10 @@
 				</div>
 
 				<!-- Navigation -->
-				 
+
 				<nav class="flex-1 overflow-y-auto slim-scrollbar py-4">
 					<ul class="space-y-1 px-3 text-sm">
 						{% comment %} DASHBOARD {% endcomment %}
-			
 
 						<li>
 							<a href="{% url 'user_list' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 {% if request.resolver_match.url_name == 'user_list' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
@@ -121,10 +120,15 @@
 							</a>
 						</li>
 
-                    </ul>
+						<li>
+							<a href="" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 {% if request.resolver_match.url_name == 'folder_list' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
+								<i class="fa-solid fa-users text-xs w-4"></i>
+								<span class="hidden lg:block ml-3">S.O Tracker</span>
+							</a>
+						</li>
+					</ul>
 
 					<div class="hidden lg:block px-3 mt-6 mb-2 text-[11px] uppercase text-gray-500 tracking-wider">Tools</div>
-
 				</nav>
 
 				<!-- Logout -->
