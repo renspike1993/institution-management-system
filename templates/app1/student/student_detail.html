@@ -1,0 +1,88 @@
+{% extends 'base.html' %} {% block title %}Student Details{% endblock %} {% block content %} {% load custom_filters %}
+
+<!-- Header -->
+<div class="flex items-center p-3 my-3 text-white bg-purple-600 rounded-md shadow">
+	<i class="fas fa-user text-3xl mr-3"></i>
+	<div>
+		<h1 class="text-base font-semibold leading-tight">Student Details</h1>
+		<small class="text-purple-200 text-xs">{{ student.first_name }} {{ student.last_name }}</small>
+	</div>
+</div>
+
+<!-- Main Card -->
+<div class="bg-white shadow rounded-lg p-5">
+	<!-- Student Info -->
+	<div class="border border-gray-200 rounded-md p-4 mb-5">
+		<h2 class="text-base font-semibold mb-3 text-gray-700">Student Information</h2>
+
+		<div class="space-y-1.5 text-gray-700 text-sm">
+			<p>
+				<strong>Folder:</strong>
+				{% if student.folder %} {{ student.folder.folder_name }} (ID: {{ student.folder.id }}) {% else %}
+				<span class="text-gray-400">None</span>
+				{% endif %}
+			</p>
+
+			<p><strong>Last Name:</strong> {{ student.last_name }}</p>
+			<p><strong>First Name:</strong> {{ student.first_name }}</p>
+			<p><strong>Middle Name:</strong> {{ student.middle_name }}</p>
+			<p><strong>Gender:</strong> {{ student.get_gender_display }}</p>
+			<p><strong>Mobile Number:</strong> {{ student.mobile_number }}</p>
+		</div>
+	</div>
+
+	<!-- Action Buttons -->
+	<div class="flex justify-end mb-5">
+		<div class="flex flex-wrap gap-2.5">
+			<a href="{% url 'student_list' %}" class="px-3 py-1.5 bg-gray-500 text-white rounded hover:bg-gray-600 text-xs flex items-center"> <i class="fas fa-arrow-left mr-1.5 text-xs"></i> Back </a>
+
+			<a href="{% url 'student_update' student.id %}" class="px-3 py-1.5 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-xs flex items-center"> <i class="fas fa-edit mr-1.5 text-xs"></i> Edit </a>
+
+			<a href="{% url 'student_delete' student.id %}" class="px-3 py-1.5 bg-red-600 text-white rounded hover:bg-red-700 text-xs flex items-center"> <i class="fas fa-trash mr-1.5 text-xs"></i> Delete </a>
+		</div>
+	</div>
+
+
+	<h2 class="text-base font-semibold text-gray-700 mt-6 mb-2.5">Full Transaction History</h2>
+
+	{% if transactions %}
+	<div class="overflow-x-auto">
+		<table class="min-w-full divide-y divide-gray-300 text-sm">
+			<thead class="bg-gray-100">
+				<tr>
+					<th class="px-3 py-2 text-left text-[10px] font-semibold">Book</th>
+					<th class="px-3 py-2 text-left text-[10px] font-semibold">Reserved</th>
+					<th class="px-3 py-2 text-left text-[10px] font-semibold">Borrowed</th>
+					<th class="px-3 py-2 text-left text-[10px] font-semibold">Due</th>
+					<th class="px-3 py-2 text-left text-[10px] font-semibold">Returned</th>
+					<th class="px-3 py-2 text-left text-[10px] font-semibold">Status</th>
+				</tr>
+			</thead>
+
+			<tbody class="divide-y divide-gray-200 bg-white">
+				{% for t in transactions %}
+				<tr>
+					<td class="px-3 py-2">{{ t.book.title }}{{ t.book.barcode }}</td>
+					<td class="px-3 py-2">{{ t.date_reserve|date:"Y-m-d" }}</td>
+					<td class="px-3 py-2">{{ t.date_borrowed|date:"Y-m-d H:i" }}</td>
+					<td class="px-3 py-2">{{ t.due_date|date:"Y-m-d" }}</td>
+					<td class="px-3 py-2">{% if t.date_returned %} {{ t.date_returned|date:"Y-m-d" }} {% else %} - {% endif %}</td>
+
+					<td class="px-3 py-2">
+						{% if t.status == "borrowed" %}
+						<span class="px-2 py-0.5 bg-yellow-300 text-yellow-800 rounded text-[10px] font-semibold">Borrowed</span>
+						{% elif t.status == "returned" %}
+						<span class="px-2 py-0.5 bg-green-600 text-white rounded text-[10px] font-semibold">Returned</span>
+						{% else %}
+						<span class="px-2 py-0.5 bg-gray-300 text-gray-700 rounded text-[10px] font-semibold">{{ t.status }}</span>
+						{% endif %}
+					</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+	{% endif %}
+</div>
+
+{% endblock %}
