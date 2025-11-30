@@ -7,3 +7,11 @@ class BookAdmin(admin.ModelAdmin):
     list_display = ('title', 'author', 'isbn', 'publication_year', 'classification')
     search_fields = ('title', 'author', 'isbn', 'subjects')
     list_filter = ('publication_year', 'language', 'classification')
+
+from django.contrib.auth.models import Permission
+
+@admin.register(Permission)
+class PermissionAdmin(admin.ModelAdmin):
+    list_display = ("name", "codename", "content_type")
+    search_fields = ("name", "codename")
+    list_filter = ("content_type",)
