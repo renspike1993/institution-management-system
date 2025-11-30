@@ -76,7 +76,7 @@
                 {% for t in page_obj.object_list %}
                 <tr class="hover:bg-gray-50 transition-colors duration-150 group">
                     <td class="px-4 py-2 font-medium text-gray-900">{{ t.book }}</td>
-                    <td class="px-4 py-2 text-gray-700">{{ t.borrower }}</td>
+                    <td class="px-4 py-2 text-gray-700">{{ t.borrower.last_name }}, {{ t.borrower.first_name }}</td>
                     <td class="px-4 py-2 text-gray-500">{{ t.date_reserve|date:"M d, Y" }}</td>
                     <td class="px-4 py-2 text-gray-500">{% if t.date_borrowed %} {{ t.date_borrowed|date:"M d, Y" }} {% else %} - {% endif %}</td>
                     <td class="px-4 py-2 text-gray-500">{% if t.due_date %} {{ t.due_date|date:"M d, Y" }} {% else %} - {% endif %}</td>

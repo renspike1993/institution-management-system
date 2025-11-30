@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Departments{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
+    <div class="px-5 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+        <h2 class="text-lg font-semibold text-gray-900">Departments</h2>
+        <a href="{% url 'department_create' %}" class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm flex items-center gap-1">
+            <i class="fas fa-plus text-xs"></i> New Department
+        </a>
+    </div>
+
+    {% if departments %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-4 py-2 text-left font-semibold text-gray-600 uppercase">Name</th>
+                    <th class="px-4 py-2 text-left font-semibold text-gray-600 uppercase">Description</th>
+                    <th class="px-4 py-2 text-left font-semibold text-gray-600 uppercase">Created</th>
+                    <th class="px-4 py-2"></th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for dept in departments %}
+                <tr class="hover:bg-gray-50 transition-colors duration-150 group">
+                    <td class="px-4 py-2 font-medium text-gray-900">{{ dept.name }}</td>
+                    <td class="px-4 py-2 text-gray-700 truncate">{{ dept.description }}</td>
+                    <td class="px-4 py-2 text-gray-500">{{ dept.created_at|date:"M j, Y" }}</td>
+                    <td class="px-4 py-2 text-right opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                        <a href="{% url 'department_update' dept.pk %}" class="p-1 text-gray-500 hover:text-yellow-600 rounded" title="Edit"><i class="fas fa-pen text-xs"></i></a>
+                        <a href="{% url 'department_delete' dept.pk %}" class="p-1 text-gray-500 hover:text-red-600 rounded" title="Delete"><i class="fas fa-trash text-xs"></i></a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-16">
+        <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-layer-group text-gray-400 text-2xl"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">No departments found</h3>
+        <p class="text-gray-600 mb-4 text-sm">Start adding departments to your system.</p>
+        <a href="{% url 'department_create' %}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm flex items-center gap-1 mx-auto">
+            <i class="fas fa-plus text-xs"></i> Add Department
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

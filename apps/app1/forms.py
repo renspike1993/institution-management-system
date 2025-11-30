@@ -2,6 +2,38 @@ from django import forms
 from .models import Student,Folder
 from django.contrib.auth.models import User
 
+from .models import Department, Profile
+
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['department', 'bio', 'avatar']
+        widgets = {
+            'department': forms.Select(attrs={
+                'class': 'border border-gray-300 rounded-md px-3 py-2 w-full'
+            }),
+            'bio': forms.Textarea(attrs={
+                'class': 'border border-gray-300 rounded-md px-3 py-2 w-full',
+                'rows': 4,
+            }),
+            'avatar': forms.ClearableFileInput(attrs={
+                'class': 'border border-gray-300 rounded-md px-3 py-2 w-full'
+            }),
+        }
+class DepartmentForm(forms.ModelForm):
+    class Meta:
+        model = Department
+        fields = ['name', 'description']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'border border-gray-300 rounded-md px-3 py-2 w-full'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'border border-gray-300 rounded-md px-3 py-2 w-full',
+                'rows': 4
+            }),
+        }
 
 # Form to create User
 class UserForm(forms.ModelForm):

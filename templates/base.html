@@ -134,7 +134,7 @@
 						</li>
 
 						<li>
-							<a href="{% url 'library_students' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 {% if request.resolver_match.url_name == 'staffs' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
+							<a href="{% url 'department_list' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 {% if request.resolver_match.url_name == 'department_list' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
 								<i class="fa-solid fa-users text-xs w-4"></i>
 								<span class="hidden lg:block ml-3">Departments</span>
 							</a>
@@ -170,13 +170,13 @@
 							</a>
 						</li>
 						<li>
-							<a href="{% url 'ads' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 text-gray-300 transition-all duration-200 {% if request.resolver_match.url_name == 'manual' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
+							<a href="{% url 'ads' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 text-gray-300 transition-all duration-200 {% if request.resolver_match.url_name == 'ads' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
 								<i class="fa-solid fa-book-open text-xs w-4"></i>
 								<span class="hidden lg:block ml-3">Ads Section</span>
 							</a>
 						</li>
 						<li>
-							<a href="{% url 'security_logs' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 text-gray-300 transition-all duration-200 {% if request.resolver_match.url_name == 'manual' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
+							<a href="{% url 'security_logs' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 text-gray-300 transition-all duration-200 {% if request.resolver_match.url_name == 'security_logs' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
 								<i class="fa-solid fa-book-open text-xs w-4"></i>
 								<span class="hidden lg:block ml-3">Attendance Logs</span>
 							</a>

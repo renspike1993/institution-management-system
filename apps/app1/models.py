@@ -24,6 +24,17 @@ class Department(models.Model):
         return self.name
     
 
+
+class Profile(models.Model):
+    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    bio = models.TextField(blank=True, null=True)
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
+
+    def __str__(self):
+        return f"Profile of {self.user.username}"
+
+
 class Student(models.Model):
     folder = models.ForeignKey(
         'Folder', 

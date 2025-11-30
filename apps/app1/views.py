@@ -2,14 +2,14 @@ from django.contrib.auth.decorators import login_required
 
 
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Student,Folder
+from .models import Student,Folder,Profile,Department
 from .forms import StudentForm, UserForm
 from django.contrib import messages
 from apps.app2.models import Transaction
 from django.contrib.auth.models import User
 
 
-from .forms import FolderForm
+from .forms import FolderForm, DepartmentForm, ProfileForm
 
 @login_required
 def index(request):
@@ -186,22 +186,38 @@ def create_user(request):
         form = UserForm()
     return render(request, "app1/users/user_form.html", {"form": form, "title": "Create User"})
 
+
 @login_required
 def update_user(request, pk):
     user = get_object_or_404(User, pk=pk)
+    
+    # Ensure profile exists
+    profile, created = Profile.objects.get_or_create(user=user)
+    
     if request.method == "POST":
-        form = UserForm(request.POST, instance=user)
-        if form.is_valid():
-            user = form.save(commit=False)
-            if form.cleaned_data['password']:
-                user.set_password(form.cleaned_data['password'])
+        user_form = UserForm(request.POST, instance=user)
+        profile_form = ProfileForm(request.POST, request.FILES, instance=profile)
+        
+        if user_form.is_valid() and profile_form.is_valid():
+            user = user_form.save(commit=False)
+            if user_form.cleaned_data['password']:
+                user.set_password(user_form.cleaned_data['password'])
             user.save()
+            profile_form.save()
+            
             messages.success(request, f"User {user.username} updated successfully.")
             return redirect("user_list")
     else:
-        form = UserForm(instance=user)
-    return render(request, "app1/users/user_form.html", {"form": form, "title": "Update User"})
-
+        user_form = UserForm(instance=user)
+        profile_form = ProfileForm(instance=profile)
+    
+    context = {
+        'user_form': user_form,
+        'profile_form': profile_form,
+        'title': f"Edit User: {user.username}"
+    }
+    
+    return render(request, "app1/users/user_edit.html", context)
 @login_required
 def delete_user(request, pk):
     user = get_object_or_404(User, pk=pk)
@@ -210,3 +226,47 @@ def delete_user(request, pk):
         messages.success(request, f"User {user.username} deleted successfully.")
         return redirect("user_list")
     return render(request, "app1/users/user_confirm_delete.html", {"user": user})
+
+
+# -------------------------------- Departments --------------------------------
+from .models import Department
+from .forms import DepartmentForm
+
+@login_required
+def department_list(request):
+    departments = Department.objects.all().order_by('name')
+    return render(request, 'app1/department/department_list.html', {'departments': departments})
+
+@login_required
+def department_create(request):
+    if request.method == 'POST':
+        form = DepartmentForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Department created successfully!")
+            return redirect('department_list')
+    else:
+        form = DepartmentForm()
+    return render(request, 'app1/department/department_form.html', {'form': form, 'title': 'Add Department'})
+
+@login_required
+def department_update(request, pk):
+    department = get_object_or_404(Department, pk=pk)
+    if request.method == 'POST':
+        form = DepartmentForm(request.POST, instance=department)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Department updated successfully!")
+            return redirect('department_list')
+    else:
+        form = DepartmentForm(instance=department)
+    return render(request, 'app1/department/department_form.html', {'form': form, 'title': 'Edit Department'})
+
+@login_required
+def department_delete(request, pk):
+    department = get_object_or_404(Department, pk=pk)
+    if request.method == 'POST':
+        department.delete()
+        messages.success(request, "Department deleted successfully!")
+        return redirect('department_list')
+    return render(request, 'app1/department/department_confirm_delete.html', {'department': department})
