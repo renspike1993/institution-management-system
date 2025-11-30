@@ -47,18 +47,18 @@ urlpatterns = [
     # ------------------------------- USERS -------------------------------
 
 
-    path("departments/", student_list.department_list, name="department_list"),
-    path("departments/create/", student_list.department_create, name="department_create"),
-    path("departments/<int:pk>/update/", student_list.department_update, name="department_update"),
-    path("departments/<int:pk>/delete/", student_list.department_delete, name="department_delete"),
+    # path("departments/", student_list.department_list, name="department_list"),
+    # path("departments/create/", student_list.department_create, name="department_create"),
+    # path("departments/<int:pk>/update/", student_list.department_update, name="department_update"),
+    # path("departments/<int:pk>/delete/", student_list.department_delete, name="department_delete"),
     # ------------------------------- USERS -------------------------------
 
 
-    path("users/", student_list.user_list, name="user_list"),
-    path("users/<int:pk>/", student_list.user_detail, name="user_detail"),
-    path("users/create/", student_list.create_user, name="create_user"),
-    path("users/<int:pk>/update/", student_list.update_user, name="update_user"),
-    path("users/<int:pk>/delete/", student_list.delete_user, name="delete_user"),
+    # path("users/", student_list.user_list, name="user_list"),
+    # path("users/<int:pk>/", student_list.user_detail, name="user_detail"),
+    # path("users/create/", student_list.create_user, name="create_user"),
+    # path("users/<int:pk>/update/", student_list.update_user, name="update_user"),
+    # path("users/<int:pk>/delete/", student_list.delete_user, name="delete_user"),
 
 
     # ------------------------------- COLLECTIONS -------------------------------

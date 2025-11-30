@@ -81,7 +81,7 @@
 						<div class="w-8 h-8 rounded-md bg-gradient-to-r from-accent-500 to-purple-600 flex items-center justify-center text-white text-xs shadow-lg">
 							<i class="fa-solid fa-cube"></i>
 						</div>
-						<span class="hidden lg:block text-sm tracking-wide font-semibold text-white"> LIBRARY<span class="text-accent-400"></span> </span>
+						<span class="hidden lg:block text-sm tracking-wide font-semibold text-white"> Registrar<span class="text-accent-400"></span> </span>
 					</div>
 				</div>
 
@@ -99,33 +99,7 @@
 				<nav class="flex-1 overflow-y-auto slim-scrollbar py-4">
 					<ul class="space-y-1 px-3 text-sm">
 						{% comment %} DASHBOARD {% endcomment %}
-						<li>
-							<a href="{% url 'dashboard' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 {% if request.resolver_match.url_name == 'dashboard' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
-								<i class="fa-solid fa-gauge text-xs w-4"></i>
-								<span class="hidden lg:block ml-3">Dashboard</span>
-							</a>
-						</li>
-
-						<li>
-							<a href="{% url 'transaction_list' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 {% if request.resolver_match.url_name == 'transaction_list' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
-								<i class="fa-solid fa-arrow-right-arrow-left text-xs w-4"></i>
-								<span class="hidden lg:block ml-3">Transactions</span>
-							</a>
-						</li>
-
-						<li>
-							<a href="{% url 'collection_list' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 {% if request.resolver_match.url_name == 'collection_list' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
-								<i class="fa-solid fa-folder text-xs w-4"></i>
-								<span class="hidden lg:block ml-3">Collections</span>
-							</a>
-						</li>
-
-						<li>
-							<a href="{% url 'book_list' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 {% if request.resolver_match.url_name == 'book_list' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
-								<i class="fa-solid fa-book text-xs w-4"></i>
-								<span class="hidden lg:block ml-3">Books</span>
-							</a>
-						</li>
+			
 
 						<li>
 							<a href="{% url 'user_list' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 {% if request.resolver_match.url_name == 'user_list' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
@@ -140,49 +114,17 @@
 								<span class="hidden lg:block ml-3">Departments</span>
 							</a>
 						</li>
-					</ul>
+						<li>
+							<a href="{% url 'folder_list' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 {% if request.resolver_match.url_name == 'folder_list' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
+								<i class="fa-solid fa-users text-xs w-4"></i>
+								<span class="hidden lg:block ml-3">Folders</span>
+							</a>
+						</li>
+
+                    </ul>
 
 					<div class="hidden lg:block px-3 mt-6 mb-2 text-[11px] uppercase text-gray-500 tracking-wider">Tools</div>
 
-					<ul class="space-y-1 px-3 text-sm">
-						<li>
-							<a href="{% url 'opac' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 text-gray-300 transition-all duration-200">
-								<i class="fa-solid fa-boxes text-xs w-4"></i>
-								<span class="hidden lg:block ml-3">OPAC</span>
-							</a>
-						</li>
-
-						<li>
-							<a href="#" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 text-gray-300 transition-all duration-200">
-								<i class="fa-solid fa-boxes text-xs w-4"></i>
-								<span class="hidden lg:block ml-3">Inventory</span>
-							</a>
-						</li>
-						<li>
-							<a href="#" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 text-gray-300 transition-all duration-200">
-								<i class="fa-solid fa-chart-bar text-xs w-4"></i>
-								<span class="hidden lg:block ml-3">Reports</span>
-							</a>
-						</li>
-						<li>
-							<a href="{% url 'manual' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 text-gray-300 transition-all duration-200 {% if request.resolver_match.url_name == 'manual' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
-								<i class="fa-solid fa-book-open text-xs w-4"></i>
-								<span class="hidden lg:block ml-3">User Manual</span>
-							</a>
-						</li>
-						<li>
-							<a href="{% url 'ads' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 text-gray-300 transition-all duration-200 {% if request.resolver_match.url_name == 'ads' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
-								<i class="fa-solid fa-book-open text-xs w-4"></i>
-								<span class="hidden lg:block ml-3">Ads Section</span>
-							</a>
-						</li>
-						<li>
-							<a href="{% url 'security_logs' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 text-gray-300 transition-all duration-200 {% if request.resolver_match.url_name == 'security_logs' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
-								<i class="fa-solid fa-book-open text-xs w-4"></i>
-								<span class="hidden lg:block ml-3">Attendance Logs</span>
-							</a>
-						</li>
-					</ul>
 				</nav>
 
 				<!-- Logout -->

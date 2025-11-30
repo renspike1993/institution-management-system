@@ -1,6 +1,8 @@
 # apps.app3/admin.py
 from django.contrib import admin
 from .models import Book
+from django.contrib.auth.models import Permission
+
 
 @admin.register(Book)
 class BookAdmin(admin.ModelAdmin):
@@ -8,7 +10,7 @@ class BookAdmin(admin.ModelAdmin):
     search_fields = ('title', 'author', 'isbn', 'subjects')
     list_filter = ('publication_year', 'language', 'classification')
 
-from django.contrib.auth.models import Permission
+
 
 @admin.register(Permission)
 class PermissionAdmin(admin.ModelAdmin):
