@@ -13,8 +13,32 @@ class Folder(models.Model):
         return self.folder_name
 
 
+
+class Department(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return self.name
+    
+
 class Student(models.Model):
-    folder = models.ForeignKey(Folder, on_delete=models.SET_NULL, null=True, blank=True, related_name="students")
+    folder = models.ForeignKey(
+        'Folder', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name="students"
+    )
+    user = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name="students"
+    )
     last_name = models.CharField(max_length=150)
     first_name = models.CharField(max_length=150)
     middle_name = models.CharField(max_length=150, blank=True, null=True)

@@ -3,7 +3,7 @@ from django.db import models
 from apps.app1.models import Student   # adjust path if needed
 from django.utils import timezone
 from datetime import timedelta
-
+from django.contrib.auth.models import User
 
 class Collection(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -63,65 +63,28 @@ class Book(models.Model):
 
 
 
-
 class BookBarcode(models.Model):
     book = models.ForeignKey('Book', on_delete=models.CASCADE, related_name="barcodes")
     barcode = models.CharField(max_length=50, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    created_at = models.DateTimeField(default=timezone.now)
     
     def __str__(self):
         return f"{self.barcode} - {self.book.title}"
 
 
 
-
-class BorrowedBook(models.Model):
-    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="borrow_records")
-    borrower = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="borrowed_books")
-    barcode = models.ForeignKey('BookBarcode', on_delete=models.CASCADE, related_name="borrowed_records", null=True, blank=True)
-    date_borrowed = models.DateTimeField(auto_now_add=True)
-    due_date = models.DateField()
-    date_returned = models.DateField(blank=True, null=True)
-
-    remarks = models.CharField(max_length=255, blank=True, null=True)
-
-    STATUS_CHOICES = [
-        ("borrowed", "Borrowed"),
-        ("returned", "Returned"),
-        ("overdue", "Overdue"),
-    ]
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="borrowed")
-
-    def __str__(self):
-        return f"{self.book.title} borrowed by {self.borrower.first_name} {self.borrower.last_name}"
-
-
-
-
-
 def default_due_date():
     return timezone.now().date() + timedelta(days=3)
 
-
-
 class Transaction(models.Model):
-    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="transactions")
-    borrower = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="transactions")
+    book = models.ForeignKey('Book', on_delete=models.CASCADE, related_name="transactions")
+    borrower = models.ForeignKey(User, on_delete=models.CASCADE, related_name="transactions")
     barcode = models.ForeignKey('BookBarcode', on_delete=models.CASCADE, related_name="transactions", null=True, blank=True)
 
-    # ✅ Auto set on creation
     date_reserve = models.DateTimeField(auto_now_add=True)
-
-    # ✅ Set only when borrowed
     date_borrowed = models.DateTimeField(blank=True, null=True)
-
-    # ✅ Set only when borrowed
     due_date = models.DateField(blank=True, null=True)
-
-    # ✅ Set only when returned
     date_returned = models.DateField(blank=True, null=True)
-
     remarks = models.CharField(max_length=255, blank=True, null=True)
 
     STATUS_CHOICES = [
@@ -132,24 +95,20 @@ class Transaction(models.Model):
         ("damaged", "Damaged"),
         ("lost", "Lost"),
     ]
-
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="reserved")
 
     def save(self, *args, **kwargs):
-
-        # ✅ AUTO-FILL ONLY WHEN STATUS IS "BORROWED"
         if self.status == "borrowed":
             if not self.date_borrowed:
                 self.date_borrowed = timezone.now()
-
             if not self.due_date:
                 self.due_date = timezone.now().date() + timedelta(days=3)
-
-        # ✅ AUTO-FILL ONLY WHEN STATUS IS "RETURNED"
         if self.status == "returned" and not self.date_returned:
             self.date_returned = timezone.now().date()
-
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.book.title} borrowed by {self.borrower.first_name} {self.borrower.last_name}"
+        return f"{self.book.title} borrowed by {self.borrower.username}"
+
+    class Meta:
+        ordering = ['-date_reserve']

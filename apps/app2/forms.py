@@ -143,11 +143,17 @@ class TransactionForm(forms.ModelForm):
             f"{obj} (Not available)" if obj.id in borrowed_barcodes else str(obj)
         )
 
-        # ✅ ADD MODE → Show only AVAILABLE barcodes
+        # # ✅ ADD MODE → Show only AVAILABLE barcodes
         if not self.instance.pk:
-            self.fields["barcode"].queryset = BookBarcode.objects.exclude(
-                id__in=borrowed_barcodes
-            )
+        #     self.fields["barcode"].queryset = BookBarcode.objects.exclude(
+        #         id__in=borrowed_barcodes
+        #     )
+
+            self.fields["barcode"].disabled = True
+            self.fields["date_borrowed"].disabled = True
+            self.fields["due_date"].disabled = True
+            self.fields["date_returned"].disabled = True
+            self.fields["status"].disabled = True
 
         # ✅ EDIT MODE
         else:

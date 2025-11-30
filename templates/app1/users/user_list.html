@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Users{% endblock %}
+{% block content %}
+
+<div class="bg-white shadow rounded-lg p-5">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="font-semibold text-lg">Users</h2>
+        <a href="{% url 'create_user' %}" class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm flex items-center gap-1">
+            <i class="fas fa-plus text-xs"></i> New User
+        </a>
+    </div>
+
+    {% if users %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm border border-gray-200 rounded">
+            <thead class="bg-gray-100 border-b border-gray-200">
+                <tr>
+                    <th class="px-3 py-2 text-left">Username</th>
+                    <th class="px-3 py-2 text-left">Full Name</th>
+                    <th class="px-3 py-2 text-left">Email</th>
+                    <th class="px-3 py-2 text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr class="hover:bg-gray-50 transition-colors duration-150">
+                    <td class="px-3 py-2">{{ user.username }}</td>
+                    <td class="px-3 py-2">{{ user.first_name }} {{ user.last_name }}</td>
+                    <td class="px-3 py-2">{{ user.email }}</td>
+                    <td class="px-3 py-2 text-right flex justify-end gap-2">
+                        <a href="{% url 'user_detail' user.id %}" class="px-2 py-1 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded text-xs flex items-center gap-1">
+                            <i class="fas fa-eye text-xs"></i> View
+                        </a>
+                        <a href="{% url 'update_user' user.id %}" class="px-2 py-1 bg-yellow-400 hover:bg-yellow-500 text-white rounded text-xs flex items-center gap-1">
+                            <i class="fas fa-pen text-xs"></i> Edit
+                        </a>
+                        <a href="{% url 'delete_user' user.id %}" class="px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-xs flex items-center gap-1">
+                            <i class="fas fa-trash text-xs"></i> Delete
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-16">
+        <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-user text-gray-400 text-2xl"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">No users found</h3>
+        <p class="text-gray-600 mb-4 text-sm">Add your first user to start building the directory.</p>
+        <a href="{% url 'create_user' %}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm flex items-center gap-1 mx-auto">
+            <i class="fas fa-plus text-xs"></i> Add User
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

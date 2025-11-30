@@ -5,7 +5,7 @@ from datetime import timedelta
 from django.utils import timezone
 
 from apps.app1.models import Student
-from ..models import Book,BorrowedBook,BookBarcode,Collection
+from ..models import Book,BookBarcode,Collection
 from ..forms import BookForm,CollectionForm
 from django.contrib import messages
 from django.db.models import Prefetch
@@ -19,7 +19,36 @@ import json
 
 
 def ads(request):
-    return render(request, 'app2/tv.html')
+    # ✅ 1. Featured books for TV carousel (random with covers)
+    featured_books = Book.objects.exclude(
+        cover_image=""
+    ).order_by("?")[:6]
+
+    # ✅ 2. New Arrivals (latest 10 books)
+    new_arrivals = Book.objects.order_by("-created_at")[:10]
+
+    # ✅ 3. Top 10 Most Borrowed Books (based on Transaction history)
+    most_borrowed_books = Book.objects.annotate(
+        borrow_count=Count(
+            "transactions",
+            filter=Q(transactions__date_borrowed__isnull=False)
+        )
+    ).order_by("-borrow_count")[:10]
+
+    # ✅ 4. Top 3 Collections with most books
+    top_collections = Collection.objects.annotate(
+        book_count=Count("books")
+    ).order_by("-book_count")[:3]
+
+    context = {
+        "featured_books": featured_books,
+        "new_arrivals": new_arrivals,
+        "most_borrowed_books": most_borrowed_books,
+        "top_collections": top_collections,
+    }
+
+    return render(request, "app2/tv.html", context)
+
 
 
 def manual(request):
@@ -55,64 +84,63 @@ from django.views.decorators.csrf import csrf_exempt
 from ..models import Transaction, Book, Student
 import json
 from django.utils.dateparse import parse_datetime
-
+from django.contrib.auth.models import User
 @csrf_exempt
 def api_reservations(request):
-    if request.method == "POST":
+    if request.method != "POST":
+        return JsonResponse({"error": "POST only"}, status=405)
+
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+        print("📌 Received Reservation:", data)
+
+        user_id = data.get("userId")
+        books = data.get("books", [])
+        reservation_date_str = data.get("reservationDate")
+
+        if not user_id or not books:
+            return JsonResponse({"error": "Missing userId or books"}, status=400)
+
+        # Ensure user exists
         try:
-            data = json.loads(request.body.decode("utf-8"))
-            print("📌 Received Reservation:", data)
+            borrower = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return JsonResponse({"error": "User not found"}, status=404)
 
-            user_id = data.get("userId")
-            books = data.get("books", [])
-            reservation_date_str = data.get("reservationDate")
+        # Parse reservation date if provided
+        reservation_date = parse_datetime(reservation_date_str) if reservation_date_str else None
 
-            if not user_id or not books:
-                return JsonResponse({"error": "Missing userId or books"}, status=400)
+        created_transactions = []
 
-            # Ensure borrower exists
+        # Ensure all books exist first
+        for book_data in books:
+            book_id = book_data.get("id")
+            if not book_id:
+                return JsonResponse({"error": f"Book id missing in {book_data}"}, status=400)
             try:
-                borrower = Student.objects.get(id=user_id)
-            except Student.DoesNotExist:
-                return JsonResponse({"error": "Borrower not found"}, status=404)
+                book_obj = Book.objects.get(id=book_id)
+            except Book.DoesNotExist:
+                return JsonResponse({"error": f"Book id {book_id} not found"}, status=404)
 
-            # Ensure all books exist first
-            book_objects = []
-            for book_data in books:
-                book_id = book_data.get("id")
-                if not book_id:
-                    return JsonResponse({"error": f"Book id missing in {book_data}"}, status=400)
-                try:
-                    book_obj = Book.objects.get(id=book_id)
-                    book_objects.append(book_obj)
-                except Book.DoesNotExist:
-                    return JsonResponse({"error": f"Book id {book_id} not found"}, status=404)
+            # Create transaction
+            transaction = Transaction.objects.create(
+                book=book_obj,
+                borrower=borrower,
+                date_reserve=reservation_date,
+                status="reserved"
+            )
+            created_transactions.append(transaction.id)
 
-            reservation_date = parse_datetime(reservation_date_str) if reservation_date_str else None
-            created_transactions = []
+        return JsonResponse({
+            "status": "success",
+            "created_transactions": created_transactions
+        })
 
-            # Create transactions only if all books exist
-            for book in book_objects:
-                transaction = Transaction.objects.create(
-                    book=book,
-                    borrower=borrower,
-                    date_reserve=reservation_date,
-                    status="reserved"
-                )
-                created_transactions.append(transaction.id)
-
-            return JsonResponse({
-                "status": "success",
-                "created_transactions": created_transactions
-            })
-
-        except Exception as e:
-            print("⚠ Error:", e)
-            return JsonResponse({"error": str(e)}, status=400)
-
-    return JsonResponse({"error": "POST only"}, status=405)
-
-
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+    except Exception as e:
+        print("⚠ Error:", e)
+        return JsonResponse({"error": str(e)}, status=500)
 
 @login_required
 def dashboard(request):
@@ -123,15 +151,18 @@ def dashboard(request):
     total_students = Student.objects.count()
 
     # Borrowed stats
-    borrowed_count = BorrowedBook.objects.filter(status="borrowed").count()
-    returned_count = BorrowedBook.objects.filter(status="returned").count()
-    overdue_count = BorrowedBook.objects.filter(status="overdue").count()
+    borrowed_count = Transaction.objects.filter(status="borrowed").count()
+    returned_count = Transaction.objects.filter(status="returned").count()
+    overdue_count = Transaction.objects.filter(status="overdue").count()
+    damaged_count = Transaction.objects.filter(status="damaged").count()  # New
 
     # Recently added books
-    recent_books = Book.objects.order_by('-created_at')[:5]
+    new_arrivals = Book.objects.order_by('-created_at')[:5]
 
     # Recently borrowed books
-    recent_borrowed = BorrowedBook.objects.select_related('book', 'borrower', 'barcode').order_by('-date_borrowed')[:5]
+    borrowed_transactions = Transaction.objects.select_related(
+        'book', 'borrower', 'barcode'
+    ).order_by('-date_borrowed')[:5]
 
     context = {
         'total_books': total_books,
@@ -141,8 +172,9 @@ def dashboard(request):
         'borrowed_count': borrowed_count,
         'returned_count': returned_count,
         'overdue_count': overdue_count,
-        'recent_books': recent_books,
-        'recent_borrowed': recent_borrowed,
+        'damaged_count': damaged_count,  # Include in context
+        'new_arrivals': new_arrivals,
+        'borrowed_transactions': borrowed_transactions,
     }
 
     return render(request, 'app2/dashboard.html', context)
@@ -307,20 +339,22 @@ def book_list(request):
 @login_required
 def book_detail(request, pk):
     book = get_object_or_404(Book, pk=pk)
-
     barcodes = book.barcodes.all()
-
     barcode_data = []
 
     for bc in barcodes:
-        # ✅ CHECK FROM TRANSACTION INSTEAD OF BorrowedBook
-        transaction = Transaction.objects.filter(
-            barcode=bc
-        ).exclude(status="returned").select_related("borrower").order_by("-id").first()
+        # Get the latest transaction for this barcode that is not returned
+        transaction = (
+            Transaction.objects.filter(barcode=bc)
+            .exclude(status="returned")
+            .select_related("borrower")
+            .order_by("-id")
+            .first()
+        )
 
         if transaction:
             status = transaction.status.capitalize()
-            borrower = transaction.borrower
+            borrower = transaction.borrower  # This is now a User object
         else:
             status = "Available"
             borrower = None
@@ -389,7 +423,7 @@ def borrow_book_list(request, student_id):
     q = request.GET.get("q", "").strip().upper()
 
     # Step 1: Get all barcodes that are currently borrowed
-    borrowed_barcodes = BorrowedBook.objects.filter(status="borrowed").values_list("barcode_id", flat=True)
+    borrowed_barcodes = Transaction.objects.filter(status="borrowed").values_list("barcode_id", flat=True)
 
     # Step 2: Get books with at least one available barcode
     books = Book.objects.prefetch_related("barcodes").filter(
@@ -409,7 +443,7 @@ def borrow_book_list(request, student_id):
 
     # Prepare a set of borrowed barcodes for this student (optional, for UI purposes)
     student_borrowed_barcodes = set(
-        BorrowedBook.objects.filter(
+        Transaction.objects.filter(
             borrower=student,
             status="borrowed"
         ).values_list("barcode_id", flat=True)
@@ -429,8 +463,8 @@ def all_books_borrow_history(request):
     status_filter = request.GET.get('status', '')  # 'borrowed', 'returned', 'overdue' or ''
     search_query = request.GET.get('q', '').strip()
 
-    # Base queryset
-    borrow_records = BorrowedBook.objects.select_related(
+    # Base queryset BorrowedBook
+    borrow_records = Transaction.objects.select_related(
         'book', 'borrower', 'barcode'
     ).order_by('-date_borrowed')
 
@@ -469,7 +503,7 @@ def borrow_book(request, student_id, book_id, barcode_id):
     barcode = get_object_or_404(BookBarcode, pk=barcode_id)
 
     # Create BorrowedBook record
-    BorrowedBook.objects.create(
+    Transaction.objects.create(
         borrower=student,
         book=book,
         barcode=barcode,
@@ -482,7 +516,7 @@ def borrow_book(request, student_id, book_id, barcode_id):
 
 @login_required
 def return_book(request, borrowed_id):
-    borrowed = get_object_or_404(BorrowedBook, pk=borrowed_id)
+    borrowed = get_object_or_404(Transaction, pk=borrowed_id)
 
     if borrowed.status == 'borrowed':
         borrowed.status = 'returned'
@@ -544,7 +578,7 @@ def security_logs(request):
 def all_borrowed_books(request):
     q = request.GET.get("q", "").strip()
 
-    borrowed = BorrowedBook.objects.select_related("borrower", "book", "barcode")
+    borrowed = Transaction.objects.select_related("borrower", "book", "barcode")
 
     if q:
         borrowed = borrowed.filter(
@@ -563,38 +597,38 @@ def all_borrowed_books(request):
     return render(request, "app2/book/borrowed_all_list.html", context)
 
 
-
 @login_required
 def api_check_book_status(request, barcode):
     try:
         # Get the barcode object and related book
         barcode_obj = BookBarcode.objects.select_related("book").get(barcode=barcode)
 
-        # Check if this copy is currently borrowed (date_returned is None)
-        borrowed = BorrowedBook.objects.select_related("borrower").filter(
-            barcode=barcode_obj,
-            date_returned__isnull=True  # only still borrowed
-        ).first()
+        # Check the latest transaction that is NOT returned
+        transaction = (
+            Transaction.objects.filter(barcode=barcode_obj)
+            .exclude(status="returned")
+            .select_related("borrower")
+            .order_by("-id")
+            .first()
+        )
 
-        if borrowed:
+        if transaction and transaction.status.lower() == "borrowed" and transaction.date_borrowed:
+            # Book is currently borrowed
             return JsonResponse({
                 "status": "borrowed",
                 "book_title": barcode_obj.book.title,
-                "borrower": f"{borrowed.borrower.first_name} {borrowed.borrower.last_name}",
-                "date_borrowed": borrowed.date_borrowed.strftime("%Y-%m-%d %H:%M"),
+                "borrower": f"{transaction.borrower.first_name} {transaction.borrower.last_name}",
+                "date_borrowed": transaction.date_borrowed.strftime("%Y-%m-%d %H:%M"),
             })
 
-        # If not borrowed, the book is available
+        # If no transaction or returned, the book is available
         return JsonResponse({
             "status": "available",
             "book_title": barcode_obj.book.title,
         })
 
     except BookBarcode.DoesNotExist:
-        # Barcode does not exist
         return JsonResponse({"status": "not_found"})
-    
-
 # -------------------------------Collection------------------------------------------------
 
 # LIST COLLECTIONS WITH BOOK COUNT

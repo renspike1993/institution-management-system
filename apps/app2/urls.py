@@ -33,6 +33,9 @@ urlpatterns = [
         views.bookbarcode_delete,
         name="bookbarcode_delete",
     ),
+
+
+
     path('logs/', views.security_logs, name='security_logs'),
     
     path("borrowed/all/", views.all_borrowed_books, name="borrowed_all"),
@@ -40,6 +43,15 @@ urlpatterns = [
     
     path('ads/', views.ads, name='ads'),
     
+
+    # ------------------------------- USERS -------------------------------
+
+
+    path("users/", student_list.user_list, name="user_list"),
+    path("users/<int:pk>/", student_list.user_detail, name="user_detail"),
+    path("users/create/", student_list.create_user, name="create_user"),
+    path("users/<int:pk>/update/", student_list.update_user, name="update_user"),
+    path("users/<int:pk>/delete/", student_list.delete_user, name="delete_user"),
 
 
     # ------------------------------- COLLECTIONS -------------------------------
