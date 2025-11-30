@@ -2,7 +2,7 @@
 Integrated systems of an institution
 
 Systems:
-1. Enrollment System (Students Portal)
+1. Enrollment System (Public Institution Portal)
 2. Entrance Examanition System (Guidance Department)
 3. Evaluations, Grades, requirements, credentials (Registrar's Office)
 4. Library Management System with OPAC (advance search engine) (Library Department)
