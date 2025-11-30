@@ -1,79 +1,283 @@
-{% extends 'base.html' %}
-{% block title %}App 1{% endblock %}
-{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<title>System Portal</title>
+		<script src="https://cdn.tailwindcss.com"></script>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+		<style>
+			@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
-<!-- Header -->
-<div class="flex items-center p-4 my-6 text-white bg-indigo-600 rounded-xl shadow-md">
-    <i class="fas fa-lock text-4xl mr-4"></i>
-    <div>
-        <h1 class="text-xl font-bold mb-1">System Integration</h1>
-        <p class="text-sm opacity-80">Rene M. Cabuhan II</p>
-    </div>
-</div>
+			body {
+				font-family: "Inter", sans-serif;
+			}
 
-<!-- Table Container -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 overflow-x-auto">
+			.glass-card {
+				background: rgba(255, 255, 255, 0.1);
+				backdrop-filter: blur(20px);
+				border: 1px solid rgba(255, 255, 255, 0.2);
+			}
 
-    <table class="w-full border border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden">
-        <thead class="bg-gray-900 text-white dark:bg-gray-700">
-            <tr>
-                <th class="px-4 py-3 text-left">System Name</th>
-                <th class="px-4 py-3 text-left">Routes</th>
-                <th class="px-4 py-3 text-left">Description</th>
-                <th class="px-4 py-3 text-center w-40">Actions</th>
-            </tr>
-        </thead>
+			.system-card {
+				transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+				position: relative;
+				overflow: hidden;
+			}
 
-        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40">
-                <td class="px-4 py-3 font-medium">Registrar</td>
-                <td class="px-4 py-3 text-indigo-600">{{ request.build_absolute_uri|slice:":-1" }}{% url 'registrar' %}</td>
-                <td class="px-4 py-3">Student Files Management System</td>
-                <td class="px-4 py-3 text-center">
-                    <a href="{% url 'registrar' %}"
-                       class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-sm shadow">
-                        Go to site
-                    </a>
-                </td>
-            </tr>
+			.system-card::before {
+				content: "";
+				position: absolute;
+				top: 0;
+				left: -100%;
+				width: 100%;
+				height: 100%;
+				background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+				transition: left 0.5s;
+			}
 
-            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40">
-                <td class="px-4 py-3 font-medium">Library Management System</td>
-                <td class="px-4 py-3 text-indigo-600">{{ request.build_absolute_uri|slice:":-1" }}{% url 'library' %}</td>
-                <td class="px-4 py-3">Books Management System</td>
-                <td class="px-4 py-3 text-center">
-                    <a href="{% url 'library' %}"
-                       class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-sm shadow">
-                        Go to site
-                    </a>
-                </td>
-            </tr>
+			.system-card:hover::before {
+				left: 100%;
+			}
 
-            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40">
-                <td class="px-4 py-3 font-medium">Entrance Exam</td>
-                <td class="px-4 py-3 text-indigo-600">{% url 'library' %}</td>
-                <td class="px-4 py-3">Student Managements</td>
-                <td class="px-4 py-3 text-center">
-                    <a href="{% url 'library' %}"
-                       class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-sm shadow">
-                        Go to site
-                    </a>
-                </td>
-            </tr>
+			.gradient-bg {
+				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			}
 
-            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40">
-                <td class="px-4 py-3 font-medium">Gates</td>
-                <td class="px-4 py-3 text-indigo-600">{% url 'library' %}</td>
-                <td class="px-4 py-3">Turnstyle Gates Managements</td>
-                <td class="px-4 py-3 text-center">
-                    <a href="{% url 'library' %}"
-                       class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-sm shadow">
-                        Go to site
-                    </a>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</div>
+			.floating {
+				animation: floating 3s ease-in-out infinite;
+			}
 
-{% endblock %}
+			@keyframes floating {
+				0%,
+				100% {
+					transform: translateY(0px);
+				}
+				50% {
+					transform: translateY(-10px);
+				}
+			}
+
+			/* Custom scrollbar */
+			::-webkit-scrollbar {
+				width: 8px;
+			}
+
+			::-webkit-scrollbar-track {
+				background: rgba(255, 255, 255, 0.1);
+				border-radius: 4px;
+			}
+
+			::-webkit-scrollbar-thumb {
+				background: rgba(255, 255, 255, 0.3);
+				border-radius: 4px;
+			}
+
+			::-webkit-scrollbar-thumb:hover {
+				background: rgba(255, 255, 255, 0.5);
+			}
+		</style>
+	</head>
+
+	<body class="gradient-bg min-h-screen p-6 relative overflow-y-auto">
+		<!-- Background Elements -->
+		<div class="fixed inset-0 overflow-hidden pointer-events-none">
+			<div class="absolute -top-40 -right-32 w-80 h-80 bg-white/5 rounded-full blur-3xl"></div>
+			<div class="absolute -bottom-40 -left-32 w-80 h-80 bg-white/5 rounded-full blur-3xl"></div>
+			<div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-white/3 rounded-full blur-3xl"></div>
+		</div>
+
+		<div class="w-full max-w-6xl mx-auto relative z-10 py-8">
+			<!-- Hero Section -->
+			<div class="text-center text-white mb-16">
+				<div class="flex justify-center mb-6 floating">
+					<div class="w-24 h-24 glass-card rounded-3xl flex items-center justify-center shadow-2xl border border-white/20">
+						<i class="fas fa-cube text-4xl text-white"></i>
+					</div>
+				</div>
+				<h1 class="text-5xl font-bold mb-3 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">Integrated School Management Systems</h1>
+				<p class="text-white/70 text-lg mb-2">Unified Management Platform</p>
+				<div class="inline-flex items-center gap-6 text-white/40 text-sm">
+					<div class="flex items-center gap-2">
+						<i class="fas fa-shield"></i>
+						<span>Secure Access</span>
+					</div>
+					<div class="w-1 h-1 bg-white/30 rounded-full"></div>
+					<div class="flex items-center gap-2">
+						<i class="fas fa-sync"></i>
+						<span>Real-time Sync</span>
+					</div>
+					<div class="w-1 h-1 bg-white/30 rounded-full"></div>
+					<div class="flex items-center gap-2">
+						<i class="fas fa-database"></i>
+						<span>Integrated Database</span>
+					</div>
+				</div>
+			</div>
+
+			<!-- Systems Grid -->
+			<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-12">
+
+				<!-- Entrance Exam -->
+				<div class="system-card glass-card rounded-2xl p-8 shadow-2xl border border-white/20 hover:border-white/30 hover:shadow-2xl hover:scale-105">
+					<div class="flex items-center gap-4 mb-6">
+						<div class="w-14 h-14 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg">
+							<i class="fas fa-clipboard-check text-2xl text-white"></i>
+						</div>
+						<div>
+							<h3 class="font-semibold text-white text-lg">Entrance Exam</h3>
+							<p class="text-white/60 text-sm">Assessment Portal</p>
+						</div>
+					</div>
+
+					<p class="text-white/70 text-sm mb-6 leading-relaxed">Online examination and student assessment management platform</p>
+
+					<div class="flex items-center gap-2 text-amber-300 text-sm mb-6">
+						<i class="fas fa-star"></i>
+						<span>Secure Testing Environment</span>
+					</div>
+
+					<a href="" class="w-full bg-white/20 hover:bg-white/30 text-white font-medium py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group">
+						<span>Access System</span>
+						<i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+					</a>
+				</div>
+
+				<!-- Registrar -->
+				<div class="system-card glass-card rounded-2xl p-8 shadow-2xl border border-white/20 hover:border-white/30 hover:shadow-2xl hover:scale-105">
+					<div class="flex items-center gap-4 mb-6">
+						<div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
+							<i class="fas fa-user-graduate text-2xl text-white"></i>
+						</div>
+						<div>
+							<h3 class="font-semibold text-white text-lg">Registrar's Office</h3>
+							<p class="text-white/60 text-sm">Data Center</p>
+						</div>
+					</div>
+
+					<p class="text-white/70 text-sm mb-6 leading-relaxed">Comprehensive student records and academic management system</p>
+
+					<div class="bg-white/10 rounded-xl p-3 mb-6">
+						<div class="text-white/50 text-xs font-medium mb-1">System URL</div>
+						<div class="text-white text-sm font-mono break-all truncate">{{ request.build_absolute_uri|slice:":-1" }}{% url 'registrar' %}</div>
+					</div>
+
+					<a href="{% url 'registrar' %}" class="w-full bg-white/20 hover:bg-white/30 text-white font-medium py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group">
+						<span>Access System</span>
+						<i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+					</a>
+				</div>
+
+				<!-- Library -->
+				<div class="system-card glass-card rounded-2xl p-8 shadow-2xl border border-white/20 hover:border-white/30 hover:shadow-2xl hover:scale-105">
+					<div class="flex items-center gap-4 mb-6">
+						<div class="w-14 h-14 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
+							<i class="fas fa-book-open text-2xl text-white"></i>
+						</div>
+						<div>
+							<h3 class="font-semibold text-white text-lg">School Library</h3>
+							<p class="text-white/60 text-sm">Digital Library</p>
+						</div>
+					</div>
+
+					<p class="text-white/70 text-sm mb-6 leading-relaxed">Advanced book management and digital resource catalog system</p>
+
+					<div class="bg-white/10 rounded-xl p-3 mb-6">
+						<div class="text-white/50 text-xs font-medium mb-1">System URL</div>
+						<div class="text-white text-sm font-mono break-all truncate">{{ request.build_absolute_uri|slice:":-1" }}{% url 'library' %}</div>
+					</div>
+
+					<a href="{% url 'library' %}dashboard" class="w-full bg-white/20 hover:bg-white/30 text-white font-medium py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group">
+						<span>Access System</span>
+						<i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+					</a>
+				</div>
+
+				<!-- Gates -->
+				<div class="system-card glass-card rounded-2xl p-8 shadow-2xl border border-white/20 hover:border-white/30 hover:shadow-2xl hover:scale-105">
+					<div class="flex items-center gap-4 mb-6">
+						<div class="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+							<i class="fas fa-door-closed text-2xl text-white"></i>
+						</div>
+						<div>
+							<h3 class="font-semibold text-white text-lg">Gates</h3>
+							<p class="text-white/60 text-sm">Access Control</p>
+						</div>
+					</div>
+
+					<p class="text-white/70 text-sm mb-6 leading-relaxed">Turnstile gates and campus access control management system</p>
+
+					<div class="flex items-center gap-2 text-green-300 text-sm mb-6">
+						<i class="fas fa-shield-alt"></i>
+						<span>Real-time Monitoring</span>
+					</div>
+
+					<a href="" class="w-full bg-white/20 hover:bg-white/30 text-white font-medium py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group">
+						<span>Access System</span>
+						<i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+					</a>
+				</div>
+
+				<!-- Kiosk Services -->
+				<div class="system-card glass-card rounded-2xl p-8 shadow-2xl border border-white/20 hover:border-white/30 hover:shadow-2xl hover:scale-105">
+					<div class="flex items-center gap-4 mb-6">
+						<div class="w-14 h-14 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-2xl flex items-center justify-center shadow-lg">
+							<i class="fas fa-desktop text-2xl text-white"></i>
+						</div>
+						<div>
+							<h3 class="font-semibold text-white text-lg">Kiosk Services</h3>
+							<p class="text-white/60 text-sm">Self-Service Portal</p>
+						</div>
+					</div>
+
+					<p class="text-white/70 text-sm mb-6 leading-relaxed">Student self-service terminal for enrollment, ID scanning, and transactions</p>
+
+					<div class="flex items-center gap-2 text-cyan-300 text-sm mb-6">
+						<i class="fas fa-bolt"></i>
+						<span>Fast Touch Access</span>
+					</div>
+
+					<a href="" class="w-full bg-white/20 hover:bg-white/30 text-white font-medium py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group">
+						<span>Access Kiosk</span>
+						<i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+					</a>
+				</div>
+
+
+				<!-- Administrator -->
+				<div class="system-card glass-card rounded-2xl p-8 shadow-2xl border border-white/20 hover:border-white/30 hover:shadow-2xl hover:scale-105">
+					<div class="flex items-center gap-4 mb-6">
+						<div class="w-14 h-14 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg">
+							<i class="fas fa-user-shield text-2xl text-white"></i>
+						</div>
+						<div>
+							<h3 class="font-semibold text-white text-lg">Administrator</h3>
+							<p class="text-white/60 text-sm">System Control</p>
+						</div>
+					</div>
+
+					<p class="text-white/70 text-sm mb-6 leading-relaxed">Full system administration, user permissions, and platform security management</p>
+
+					<div class="flex items-center gap-2 text-red-300 text-sm mb-6">
+						<i class="fas fa-lock"></i>
+						<span>Restricted Access</span>
+					</div>
+
+					<a href="{% url 'admin:index' %}" class="w-full bg-white/20 hover:bg-white/30 text-white font-medium py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group">
+						<span>Access Admin</span>
+						<i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+					</a>
+				</div>
+
+
+            </div>
+
+			<!-- Footer -->
+			<div class="text-center mt-12 pt-8 border-t border-white/10">
+				<div class="inline-flex items-center gap-2 text-white/50 text-sm">
+					<i class="fas fa-user-shield"></i>
+					<span>Rene M. Cabuhan II • System Developer</span>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

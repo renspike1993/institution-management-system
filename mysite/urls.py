@@ -12,6 +12,8 @@ def home(request):
 
 urlpatterns = [
     # Django Admin
+    path('', home),
+
     path('admin/', admin.site.urls),
 
     # Authentication

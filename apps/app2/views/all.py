@@ -276,7 +276,7 @@ def index(request):
 from django.utils.html import escape
 import re
 
-@login_required
+
 def opac(request):
     query = request.GET.get('q', '').strip()
     books_list = Book.objects.all()
