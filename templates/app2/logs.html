@@ -42,7 +42,54 @@
             left: -1000px;
             top: -1000px;
         }
+        
+        /* Custom styles for the image container */
+        .card-image-container {
+            width: 25%;
+            min-height: 180px;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        
+        .card-content-container {
+            width: 75%;
+        }
+        
+        /* Fallback image placeholder */
+        .image-placeholder {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .card-image-container {
+                width: 30%;
+                min-height: 160px;
+            }
+            
+            .card-content-container {
+                width: 70%;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .card-image-container {
+                width: 35%;
+            }
+            
+            .card-content-container {
+                width: 65%;
+            }
+        }
+		
     </style>
+	
 </head>
 <body class="bg-gray-50 min-h-screen font-sans">
     <!-- Header -->
@@ -115,6 +162,22 @@
         // Scanner configuration
         const SCANNER_DELAY = 100;
         const MIN_SCAN_LENGTH = 3;
+
+        // Sample images for demonstration - replace with your actual image URLs
+        const sampleImages = [
+            "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w-300&q=80",
+            "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+            "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+            "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80"
+        ];
+
+        // Function to get image based on RFID value
+        function getImageForRFID(value) {
+            const hash = hashCode(value);
+            const imageIndex = hash % sampleImages.length;
+            return sampleImages[imageIndex];
+        }
 
         // Focus management
         input.addEventListener("blur", () => {
@@ -246,15 +309,22 @@
                     switch (data.status) {
                         case "available":
                             if (shouldTriggerUnauthorized(value)) {
+                                // Get image for this RFID
+                                const imageUrl = data.image || getImageForRFID(value);
+                                
                                 addScanItem({
                                     id: Date.now(),
                                     value: value + "📕",
-                                    title: "📕 Unauthorized" + data.book_title,
+                                    title: "📕 Unauthorized - " + data.book_title,
                                     status: "📕 Unauthorized",
                                     extra: `Borrower: ${data.borrower}<br>Date: ${data.date_borrowed}`,
                                     timestamp: new Date(),
                                     time: new Date().toLocaleTimeString(),
                                     date: new Date().toLocaleDateString(),
+                                    image: imageUrl,
+                                    book_title: data.book_title,
+                                    borrower: data.borrower,
+                                    date_borrowed: data.date_borrowed
                                 });
                                 speak("Stop!");
                                 showAlert("error", "Unauthorized to checkout!", `"${data.book_title}" <br> This book is not authorized to go out!`, 3000);
@@ -265,6 +335,9 @@
 
                         case "borrowed":
                             if (shouldTriggerUnauthorized(value)) {
+                                // Get image for this RFID
+                                const imageUrl = data.image || getImageForRFID(value);
+                                
                                 addScanItem({
                                     id: Date.now(),
                                     value: "✅ " + value,
@@ -274,6 +347,10 @@
                                     timestamp: new Date(),
                                     time: new Date().toLocaleTimeString(),
                                     date: new Date().toLocaleDateString(),
+                                    image: imageUrl,
+                                    book_title: data.book_title,
+                                    borrower: data.borrower,
+                                    date_borrowed: data.date_borrowed
                                 });
                                 showAlert("success", "Authorized to checkout!", `"${data.book_title}" <br> Borrowed by: ${data.borrower} <br> Date: ${data.date_borrowed}`);
                                 successBeep();
@@ -371,53 +448,88 @@
             const borderColors = ["border-blue-200", "border-green-200", "border-red-200", "border-orange-200", "border-purple-200"];
 
             const card = document.createElement("div");
-            card.classList.add("fade-in", "bg-white", "rounded-xl", "shadow-md", "border", borderColors[colorIndex], "mb-4", "overflow-hidden", "transition-transform", "duration-200", "hover:shadow-lg");
+            card.classList.add("fade-in", "bg-white", "rounded-xl", "shadow-md", "border", borderColors[colorIndex], "mb-4", "overflow-hidden", "transition-transform", "duration-200", "hover:shadow-lg", "flex");
+            
+            // Determine if we should show image placeholder or actual image
+            const hasImage = scan.image && scan.image.trim() !== '';
+            const imageStyle = hasImage 
+                ? `background-image: url('${scan.image}')`
+                : '';
             
             card.innerHTML = `
-                <div class="p-4">
-                    <div class="flex items-start space-x-3">
-                        <div class="flex-shrink-0">
-                            <div class="w-10 h-10 rounded-full ${colors[colorIndex]} flex items-center justify-center ${textColors[colorIndex]} font-bold">
-                                ${scan.value.charAt(0)}
+                <!-- Image Section - 1/4 width -->
+                <div class="card-image-container ${!hasImage ? 'image-placeholder' : ''}" style="${imageStyle}">
+                    ${!hasImage ? `<div class="text-center p-4">${scan.value.charAt(0)}</div>` : ''}
+                </div>
+                
+                <!-- Content Section - 3/4 width -->
+                <div class="card-content-container p-4">
+                    <div class="flex flex-col h-full">
+                        <!-- Header with title and status -->
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h3 class="font-semibold text-gray-800 text-lg">${scan.book_title || 'RFID Scan'}</h3>
+                                <p class="text-sm text-gray-500">${scan.date} at ${scan.time}</p>
+                            </div>
+                            <span class="px-3 py-1 text-xs font-medium rounded-full ${scan.status.includes('✅') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                ${scan.status}
+                            </span>
+                        </div>
+                        
+                        <!-- RFID Details -->
+                        <div class="mb-4 flex-1">
+                            <div class="mb-3">
+                                <p class="text-sm font-medium text-gray-700 mb-1">Scanned RFID:</p>
+                                <p class="font-mono bg-gray-50 px-3 py-2 rounded-lg border border-gray-200 text-gray-800 break-all">
+                                    ${scan.value}
+                                </p>
+                            </div>
+                            
+                            <!-- Additional Information -->
+                            <div class="space-y-2">
+                                ${scan.borrower ? `
+                                    <div class="flex items-center text-sm">
+                                        <span class="font-medium text-gray-700 mr-2">Borrower:</span>
+                                        <span class="text-gray-600">${scan.borrower}</span>
+                                    </div>
+                                ` : ''}
+                                
+                                ${scan.date_borrowed ? `
+                                    <div class="flex items-center text-sm">
+                                        <span class="font-medium text-gray-700 mr-2">Borrow Date:</span>
+                                        <span class="text-gray-600">${scan.date_borrowed}</span>
+                                    </div>
+                                ` : ''}
+                                
+                                ${scan.extra ? `
+                                    <div class="text-sm text-gray-600 mt-2 p-2 bg-gray-50 rounded-lg">
+                                        ${scan.extra}
+                                    </div>
+                                ` : ''}
                             </div>
                         </div>
-                        <div class="flex-1">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <h3 class="font-semibold text-gray-800">RFID Scan</h3>
-                                    <p class="text-sm text-gray-500">${scan.date} at ${scan.time}</p>
-                                </div>
-                                <span class="px-2 py-1 text-xs font-medium rounded-full ${scan.status.includes('✅') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
-                                    ${scan.status}
-                                </span>
+                        
+                        <!-- Footer with ID and timestamp -->
+                        <div class="flex justify-between items-center pt-3 border-t border-gray-100 text-sm text-gray-500">
+                            <div class="flex items-center">
+                                <span class="mr-4">ID: ${scan.id}</span>
+                                <span class="text-xs bg-gray-100 px-2 py-1 rounded">${getTimeAgo(scan.timestamp)}</span>
                             </div>
                             
-                            <div class="mt-3">
-                                <p class="text-gray-700">
-                                    <span class="font-medium">Scanned RFID:</span> 
-                                    <span class="font-mono bg-gray-50 px-2 py-1 rounded">${scan.value}</span>
-                                </p>
-                                ${scan.extra ? `<div class="mt-2 text-sm text-gray-600">${scan.extra}</div>` : ''}
-                            </div>
-                            
-                            <div class="mt-4 flex justify-between items-center text-sm text-gray-500">
-                                <span>ID: ${scan.id}</span>
-                                <span>${getTimeAgo(scan.timestamp)}</span>
+                            <!-- Action buttons -->
+                            <div class="flex space-x-2">
+                                <button class="action-btn px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                                    <span class="mr-1">✓</span> Validate
+                                </button>
+                                <button class="action-btn px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                                    <span class="mr-1">ℹ️</span> Details
+                                </button>
+                                <button class="delete-btn px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                    <span class="mr-1">🗑️</span> Delete
+                                </button>
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="bg-gray-50 px-4 py-3 border-t border-gray-100 flex space-x-2">
-                    <button class="action-btn px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                        <span>✓</span> Validate
-                    </button>
-                    <button class="action-btn px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                        <span>ℹ️</span> Details
-                    </button>
-                    <button class="delete-btn px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors ml-auto">
-                        <span>🗑️</span> Delete
-                    </button>
                 </div>
             `;
 
@@ -469,11 +581,13 @@
             const diffMs = now - timestamp;
             const diffMins = Math.floor(diffMs / 60000);
             const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
 
             if (diffMins < 1) return "Just now";
-            if (diffMins < 60) return `${diffMins} minute${diffMins === 1 ? "" : "s"} ago`;
-            if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? "" : "s"} ago`;
-            return timestamp.toLocaleDateString();
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            if (diffDays < 7) return `${diffDays}d ago`;
+            return timestamp.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         }
 
         // Initialize
@@ -487,8 +601,46 @@
             const sampleScans = ["RFID-001-ABC123", "RFID-002-XYZ789", "RFID-003-DEF456", "RFID-004-GHI789", "RFID-005-JKL012"];
             sampleScans.forEach((scan, index) => {
                 setTimeout(() => {
-                    processScan(scan);
-                }, index * 300);
+                    // Simulate a book check response
+                    const isBorrowed = index % 2 === 0;
+                    const sampleData = {
+                        status: isBorrowed ? "borrowed" : "available",
+                        book_title: `Sample Book ${index + 1}`,
+                        borrower: isBorrowed ? "John Doe" : null,
+                        date_borrowed: isBorrowed ? "2024-01-15" : null,
+                        image: sampleImages[index % sampleImages.length]
+                    };
+                    
+                    // Create a mock fetch response
+                    const mockResponse = {
+                        json: () => Promise.resolve(sampleData)
+                    };
+                    
+                    // Process the scan with mock data
+                    showStatus("scanning", "Checking book...");
+                    mockResponse.json().then(data => {
+                        if (shouldTriggerUnauthorized(scan)) {
+                            const itemData = {
+                                id: Date.now() + index,
+                                value: isBorrowed ? "✅ " + scan : scan + "📕",
+                                title: isBorrowed ? data.book_title : "📕 Unauthorized - " + data.book_title,
+                                status: isBorrowed ? "✅ Borrowed" : "📕 Unauthorized",
+                                extra: isBorrowed ? `Borrower: ${data.borrower}<br>Date: ${data.date_borrowed}` : "",
+                                timestamp: new Date(),
+                                time: new Date().toLocaleTimeString(),
+                                date: new Date().toLocaleDateString(),
+                                image: data.image,
+                                book_title: data.book_title,
+                                borrower: data.borrower,
+                                date_borrowed: data.date_borrowed
+                            };
+                            
+                            addScanItem(itemData);
+                            showStatus("ready", "Ready to scan");
+                        }
+                    });
+                    
+                }, index * 500);
             });
         }
     </script>
