@@ -14,7 +14,62 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q,Count
 from django.http import JsonResponse
 import json
+from django.contrib.auth.models import Group,Permission
 
+
+
+# def group_list(request):
+#     groups = Group.objects.all()
+#     return render(request, "app1/groups/group_list.html", {"groups": groups})
+
+
+
+# def group_permissions(request, pk):
+#     group = get_object_or_404(Group, id=pk)
+#     permissions = Permission.objects.all()
+
+#     return render(request, "app1/groups/group_permissions.html", {
+#         "group": group,
+#         "permissions": permissions
+#     })
+
+
+from django.contrib.contenttypes.models import ContentType
+
+def group_list(request):
+    groups = Group.objects.all()
+    return render(request, "app1/groups/group_list.html", {"groups": groups})
+
+
+def group_permissions(request, pk):
+    group = get_object_or_404(Group, id=pk)
+
+    # Get all permissions for app2 only
+    app2_content_types = ContentType.objects.filter(app_label='app2')
+    permissions = Permission.objects.filter(content_type__in=app2_content_types)
+
+    return render(request, "app1/groups/group_permissions.html", {
+        "group": group,
+        "permissions": permissions
+    })
+from django.views.decorators.http import require_POST
+
+@require_POST
+def toggle_permission(request):
+    group_id = request.POST.get("group_id")
+    perm_id = request.POST.get("perm_id")
+
+    group = Group.objects.get(id=group_id)
+    permission = Permission.objects.get(id=perm_id)
+
+    if permission in group.permissions.all():
+        group.permissions.remove(permission)
+        status = "removed"
+    else:
+        group.permissions.add(permission)
+        status = "added"
+
+    return JsonResponse({"status": status})
 
 
 

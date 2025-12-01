@@ -4,6 +4,8 @@ from django.urls import path
 from apps.app1 import views as student_list
 from apps.app2.views import all as views
 from apps.app2.views import transaction
+from django.contrib.auth.decorators import permission_required
+
 
 urlpatterns = [
     path('dashboard/', views.dashboard, name='dashboard'),
@@ -82,4 +84,12 @@ urlpatterns = [
     path("transactions/<int:pk>/delete/", transaction.transaction_delete, name="transaction_delete"),
     path("transactions/borrower/<int:borrower_id>/", transaction.borrower_transactions, name="borrower_transactions"),
 
+    path("groups/", views.group_list, name="group_list"),
+    path("groups/<int:pk>/permissions/", views.group_permissions, name="group_permissions"),
+    # path("groups/<int:group_id>/permissions/", views.group_permissions, name="group_permissions"),
+    # path("groups/toggle-permission/", views.toggle_permission, name="toggle_permission"),  # ✅ ADD THIS
+    
+    path("groups/<int:pk>/permissions/", views.group_permissions, name="group_permissions"),
+    path("groups/toggle-permission/", views.toggle_permission, name="toggle_permission"),  # ✅ REQUIRED
+    
     ]

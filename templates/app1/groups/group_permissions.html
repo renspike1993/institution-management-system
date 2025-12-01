@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- ✅ jQuery FIRST -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<!-- ✅ Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<!-- ✅ Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<!-- ✅ PAGE HEADER -->
+<div class="flex items-center justify-between mb-4">
+    <h2 class="text-lg font-semibold text-gray-800">
+        Group: <span class="text-purple-600">{{ group.name }}</span>
+    </h2>
+
+    <a href="{% url 'group_list' %}"
+        class="px-3 py-1.5 text-xs bg-gray-500 text-white rounded hover:bg-gray-600 flex items-center gap-1">
+        <i class="fas fa-arrow-left"></i> Back
+    </a>
+</div>
+
+<!-- ✅ PERMISSIONS TABLE -->
+<div class="bg-white shadow rounded-lg overflow-hidden">
+    <table class="w-full text-sm">
+        <thead class="bg-gray-100 border-b">
+            <tr>
+                <th class="px-4 py-2 text-left font-semibold text-gray-600">Permission</th>
+                <th class="px-4 py-2 text-center font-semibold text-gray-600">Allow</th>
+            </tr>
+        </thead>
+
+        <tbody class="divide-y">
+            {% for perm in permissions %}
+            <tr class="hover:bg-gray-50">
+                <td class="px-4 py-2 text-gray-700">
+                    {{ perm.name }}
+                    <div class="text-[11px] text-gray-400">{{ perm.codename }}</div>
+                </td>
+
+                <td class="px-4 py-2 text-center">
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox"
+                               class="sr-only peer permission-toggle"
+                               data-group="{{ group.id }}"
+                               data-perm="{{ perm.id }}"
+                               {% if perm in group.permissions.all %}checked{% endif %}>
+
+                        <!-- ✅ TOGGLE SWITCH -->
+                        <div
+                            class="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-purple-600
+                                   peer-focus:ring-2 peer-focus:ring-purple-400
+                                   after:content-[''] after:absolute after:top-0.5 after:left-[2px]
+                                   after:w-5 after:h-5 after:bg-white after:rounded-full after:transition-all
+                                   peer-checked:after:translate-x-full">
+                        </div>
+                    </label>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- ✅ AJAX TOGGLE SCRIPT -->
+<script>
+document.querySelectorAll(".permission-toggle").forEach(toggle => {
+    toggle.addEventListener("change", function () {
+
+        const groupId = this.dataset.group;
+        const permId = this.dataset.perm;
+
+        fetch("{% url 'toggle_permission' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: `group_id=${groupId}&perm_id=${permId}`
+        })
+        .then(res => res.json())
+        .then(data => console.log("Permission:", data.status))
+        .catch(err => console.error(err));
+    });
+});
+</script>
+
+{% endblock %}

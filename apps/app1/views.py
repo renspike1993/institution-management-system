@@ -55,6 +55,81 @@ def create_user(request):
 
     return render(request, "app1/user_form.html", {"form": form, "title": "Create User"})
 
+import csv, io
+
+@login_required
+def import_users_csv(request):
+    if request.method == "POST" and request.FILES.get("csv_file"):
+        csv_file = request.FILES["csv_file"]
+
+        # ✅ Validate CSV extension
+        if not csv_file.name.endswith(".csv"):
+            messages.error(request, "Invalid file type. Please upload a CSV file.")
+            return redirect("import_users")
+
+        try:
+            data = csv_file.read().decode("utf-8")
+            io_string = io.StringIO(data)
+            reader = csv.DictReader(io_string)
+
+            created_count = 0
+            skipped_count = 0
+
+            for row in reader:
+                school_id = row["school_id"].strip()
+                lname = row["lname"].strip()
+                fname = row["fname"].strip()
+                midname = row["midname"].strip()
+                extname = row["extname"].strip()
+                sex = row["sex"].strip()
+                course = row["course"].strip()
+                year = row["year"].strip()
+                major = row["major"].strip()
+                email = row["email"].strip()
+                student_id = row["student_id"].strip()
+
+                username = student_id  # ✅ use student_id as username
+                password = student_id  # ✅ default password
+
+                if User.objects.filter(username=username).exists():
+                    skipped_count += 1
+                    continue
+
+                user = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    password=password,
+                    first_name=fname,
+                    last_name=lname
+                )
+
+                # ✅ OPTIONAL: If you have a Student Profile model
+                # StudentProfile.objects.create(
+                #     user=user,
+                #     school_id=school_id,
+                #     midname=midname,
+                #     extname=extname,
+                #     sex=sex,
+                #     course=course,
+                #     year=year,
+                #     major=major,
+                # )
+
+                created_count += 1
+
+            messages.success(
+                request,
+                f"✅ Import completed: {created_count} created, {skipped_count} skipped."
+            )
+            return redirect("user_list")
+
+        except Exception as e:
+            messages.error(request, f"CSV Import Error: {str(e)}")
+            return redirect("import_users")
+
+    return render(request, "app1/users/import_users.html")
+
+
 # CREATE STUDENT AND USER
 @login_required
 def student_create(request):
@@ -154,12 +229,49 @@ def folder_delete(request, pk):
 
 
 from .forms import UserForm
+from django.db.models import Q
+from django.core.paginator import Paginator
 
 @login_required
 def user_list(request):
-    users = User.objects.all()
-    return render(request, "app1/users/user_list.html", {"users": users})
+    search_query = request.GET.get("search", "")
 
+    user_list = User.objects.all()
+
+    # ✅ SEARCH FILTER
+    if search_query:
+        user_list = user_list.filter(
+            Q(username__icontains=search_query) |
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query) |
+            Q(email__icontains=search_query)
+        )
+
+    user_list = user_list.order_by("id")
+
+    # ✅ PAGINATION
+    paginator = Paginator(user_list, 15)  # 10 per page
+    page_number = request.GET.get("page")
+    users = paginator.get_page(page_number)
+
+    return render(request, "app1/users/user_list.html", {
+        "users": users,
+        "search_query": search_query
+    })
+
+def user_detail(request, pk):
+    user_obj = get_object_or_404(User, pk=pk)
+
+    profile = Profile.objects.filter(user=user_obj).first()  # ✅ Safe fetch
+    transactions = user_obj.transaction_set.all()  # adjust if your related_name is different
+
+    return render(request, "app1/users/user_detail.html", {
+        "user_obj": user_obj,
+        "profile": profile,
+        "transactions": transactions
+    })
+    
+    
 @login_required
 def user_detail(request, pk):
     user = get_object_or_404(User, pk=pk)

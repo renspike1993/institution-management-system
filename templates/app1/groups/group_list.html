@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="flex items-center justify-between mb-6">
+    <h2 class="text-2xl font-bold text-gray-800">Roles & Permissions</h2>
+    <a href="" 
+       class="px-4 py-2 text-sm bg-purple-600 text-white rounded hover:bg-purple-700 flex items-center gap-2">
+        <i class="fas fa-plus"></i> New Role
+    </a>
+</div>
+
+<div class="overflow-x-auto bg-white shadow rounded-lg">
+    <table class="min-w-full text-sm divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">#</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Role Name</th>
+                <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for group in groups %}
+            <tr class="hover:bg-purple-50 transition">
+                <td class="px-6 py-4 text-gray-700">{{ forloop.counter }}</td>
+                <td class="px-6 py-4 font-medium text-gray-800">{{ group.name }}</td>
+                <td class="px-6 py-4 text-center">
+                    <a href="{% url 'group_permissions' group.id %}"
+                       class="px-3 py-1.5 text-xs bg-purple-600 text-white rounded hover:bg-purple-700 transition">
+                        View Permissions
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" class="px-6 py-6 text-center text-gray-400">
+                    No roles found. Create your first role.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

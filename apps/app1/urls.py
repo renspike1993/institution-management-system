@@ -31,6 +31,7 @@ urlpatterns = [
     path('folders/<int:pk>/edit/', views.folder_update, name='folder_update'),
     path('folders/<int:pk>/delete/', views.folder_delete, name='folder_delete'),
 
+    path("users/import/", views.import_users_csv, name="import_users"),
 
 
 ]

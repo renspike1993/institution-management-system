@@ -1085,7 +1085,7 @@
 		<script>
 			// Book data structure for localStorage
 			const CART_STORAGE_KEY = "library_cart";
-			const CHECKOUT_ROUTE = "/api/reservations/"; // Replace with your actual route
+			const CHECKOUT_ROUTE = "{% url 'api_reservations' %}"; // Replace with your actual route
 
 			// Initialize cart from localStorage
 			function initializeCart() {
