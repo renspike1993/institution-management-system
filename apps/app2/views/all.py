@@ -622,7 +622,7 @@ def bookbarcode_delete(request, book_id, barcode_id):
     return redirect("book_detail", pk=book_id)
 # ----------------------------------------------------------------------------------
 
-@login_required
+
 def security_logs(request):
     return render(request, 'app2/logs.html')
 

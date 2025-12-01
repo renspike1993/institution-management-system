@@ -28,6 +28,8 @@ INSTALLED_APPS = [
     'apps.app1',
     'apps.app2',
     'apps.app3',
+    'sslserver',
+
 ]
 
 
