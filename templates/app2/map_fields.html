@@ -1,0 +1,28 @@
+<h2>Map CSV Columns to Model Fields</h2>
+
+<form method="post">
+  {% csrf_token %}
+
+  <table border="1">
+    <tr>
+      <th>Model Field</th>
+      <th>CSV Column</th>
+    </tr>
+
+    {% for field in model_fields %}
+    <tr>
+      <td>{{ field }}</td>
+      <td>
+        <select name="{{ field }}">
+          <option value="">-- Skip --</option>
+          {% for header in headers %}
+            <option value="{{ header }}">{{ header }}</option>
+          {% endfor %}
+        </select>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <button type="submit">Import Data</button>
+</form>

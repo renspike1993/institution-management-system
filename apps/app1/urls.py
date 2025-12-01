@@ -33,5 +33,9 @@ urlpatterns = [
 
     path("users/import/", views.import_users_csv, name="import_users"),
 
+    path("importer/", views.importer, name="importer"),
+    path("map-fields/", views.map_fields, name="map_fields"),
+    path("process-import/", views.process_import, name="process_import"),
+
 
 ]

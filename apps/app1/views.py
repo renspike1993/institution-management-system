@@ -8,8 +8,179 @@ from django.contrib import messages
 from apps.app2.models import Transaction
 from django.contrib.auth.models import User
 
+import csv
+import io
+from django.shortcuts import render, redirect
+from django.apps import apps
+from django.http import HttpResponseBadRequest
+from .forms import CSVImportForm
 
 from .forms import FolderForm, DepartmentForm, ProfileForm
+
+
+
+def importer(request):
+    if request.method == "POST":
+        form = CSVImportForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            model_label = form.cleaned_data["model"]
+            file = form.cleaned_data["file"]
+
+            app_label, model_name = model_label.split(".")
+            Model = apps.get_model(app_label, model_name)
+
+            data = file.read().decode("utf-8")
+            csv_reader = csv.reader(io.StringIO(data))
+            headers = next(csv_reader)
+
+            model_fields = [
+                f.name for f in Model._meta.fields if not f.primary_key
+            ]
+
+            request.session["csv_headers"] = headers
+            request.session["model_fields"] = model_fields
+            request.session["model_label"] = model_label
+            request.session["csv_data"] = list(csv_reader)
+
+            return redirect("map_fields")
+
+    else:
+        form = CSVImportForm()
+
+    return render(request, "app2/importer.html", {"form": form})
+from django.db import transaction, IntegrityError
+from django.apps import apps
+
+from django.db import transaction
+from django.apps import apps
+from django.http import HttpResponseBadRequest
+
+from django.db import transaction
+from django.apps import apps
+
+
+def get_best_lookup_field(model):
+    """Find the best text field to use for FK lookup"""
+    for fname in ["name", "title", "code"]:
+        try:
+            model._meta.get_field(fname)
+            return fname
+        except:
+            continue
+
+    # Fallback: first CharField
+    for field in model._meta.fields:
+        if field.get_internal_type() == "CharField":
+            return field.name
+
+    return None
+
+
+def process_import(request):
+    model_label = request.session.get("model_label")
+    mappings = request.session.get("mappings")
+    csv_data = request.session.get("csv_data")
+    headers = request.session.get("csv_headers")
+
+    app_label, model_name = model_label.split(".")
+    Model = apps.get_model(app_label, model_name)
+
+    created = 0
+    updated = 0
+    skipped = 0
+
+    unique_fields = [
+        f.name for f in Model._meta.fields
+        if f.unique and not f.primary_key
+    ]
+
+    with transaction.atomic():
+
+        for row in csv_data:
+            row_dict = dict(zip(headers, row))
+            data = {}
+            lookup = {}
+
+            for model_field, csv_col in mappings.items():
+                field = Model._meta.get_field(model_field)
+                raw_value = row_dict.get(csv_col)
+
+                if isinstance(raw_value, str):
+                    raw_value = raw_value.strip()
+
+                # ✅ ✅ SAFE FOREIGN KEY HANDLING
+                if field.is_relation and field.many_to_one:
+                    RelatedModel = field.related_model
+
+                    lookup_field = get_best_lookup_field(RelatedModel)
+                    related_obj = None
+
+                    if lookup_field and raw_value:
+                        related_obj = RelatedModel.objects.filter(
+                            **{f"{lookup_field}__iexact": raw_value}
+                        ).first()
+
+                    if related_obj is None:
+                        if lookup_field:
+                            related_obj = RelatedModel.objects.create(
+                                **{lookup_field: raw_value or "Unknown"}
+                            )
+                        else:
+                            related_obj = RelatedModel.objects.create()
+
+                    data[model_field] = related_obj
+                else:
+                    data[model_field] = raw_value
+
+                # ✅ Build UNIQUE lookup safely
+                if model_field in unique_fields and raw_value:
+                    lookup[model_field] = raw_value
+
+            # ✅ Skip if unique required but missing
+            if unique_fields and not lookup:
+                skipped += 1
+                continue
+
+            # ✅ Update or create safely
+            obj, created_flag = Model.objects.update_or_create(
+                defaults=data, **lookup
+            )
+
+            if created_flag:
+                created += 1
+            else:
+                updated += 1
+
+    return render(request, "app2/import_success.html", {
+        "created": created,
+        "updated": updated,
+        "skipped": skipped,
+        "total": created + updated + skipped,
+    })
+
+
+
+def map_fields(request):
+    headers = request.session.get("csv_headers")
+    model_fields = request.session.get("model_fields")
+
+    if request.method == "POST":
+        mappings = {}
+
+        for field in model_fields:
+            csv_col = request.POST.get(field)
+            if csv_col:
+                mappings[field] = csv_col
+
+        request.session["mappings"] = mappings
+        return redirect("process_import")
+
+    return render(request, "app2/map_fields.html", {
+        "headers": headers,
+        "model_fields": model_fields,
+    })
+
 
 @login_required
 def index(request):

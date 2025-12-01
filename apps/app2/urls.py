@@ -91,5 +91,4 @@ urlpatterns = [
     
     path("groups/<int:pk>/permissions/", views.group_permissions, name="group_permissions"),
     path("groups/toggle-permission/", views.toggle_permission, name="toggle_permission"),  # ✅ REQUIRED
-    
-    ]
+]

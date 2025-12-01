@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from datetime import timedelta
 from django.utils import timezone
 
-from apps.app1.models import Student
+from apps.app1.models import Student,Profile
 from ..models import Book,BookBarcode,Collection
 from ..forms import BookForm,CollectionForm
 from django.contrib import messages
@@ -376,18 +376,38 @@ def opac(request):
         'page_obj': page_obj,
         'search_query': query
     })
+from django.core.paginator import Paginator
+from django.db.models import Q, Count
+from django.contrib.auth.decorators import login_required
 
 @login_required
 def book_list(request):
+    search = request.GET.get('search', '').strip()
+
     books = Book.objects.annotate(
         borrowed_total=Count(
-            'transactions',   # ✅ FIXED HERE
+            'transactions',
             filter=Q(transactions__status="borrowed")
         )
     ).prefetch_related("barcodes")
 
+    # ✅ SEARCH FILTER
+    if search:
+        books = books.filter(
+            Q(title__icontains=search) |
+            Q(author__icontains=search) |
+            Q(control_number__icontains=search) |
+            Q(isbn__icontains=search)
+        )
+
+    # ✅ PAGINATION (10 per page)
+    paginator = Paginator(books, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
     return render(request, 'app2/book/book_list.html', {
-        'books': books
+        'books': page_obj,
+        'search': search
     })
 
 # View book details
@@ -658,6 +678,12 @@ def api_check_book_status(request, barcode):
         # Get the barcode object and related book
         barcode_obj = BookBarcode.objects.select_related("book").get(barcode=barcode)
 
+        user_barcode = Profile.objects.filter(barcode=barcode).first()
+
+        # profile = Profile.objects.get(barcode=barcode)
+
+        print("📚 Scanned Book User:", user_barcode)
+
         # Check the latest transaction that is NOT returned
         transaction = (
             Transaction.objects.filter(barcode=barcode_obj)
@@ -765,3 +791,8 @@ def generate_fake_books_view(request):
         )
 
     return HttpResponse(f"Created {n} fake books successfully!")
+
+
+def importer(request):
+    return render(request, 'app2/importer.html' )
+
