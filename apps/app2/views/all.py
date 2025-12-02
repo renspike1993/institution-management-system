@@ -672,19 +672,21 @@ def all_borrowed_books(request):
     return render(request, "app2/book/borrowed_all_list.html", context)
 
 
+from apps.controller_gates.models import TurnstileAttendanceLog
+
+
+from apps.app2.models import BookBarcode, Transaction
+from apps.app1.models import Profile
 
 
 @login_required
 def api_check_book_status(request, barcode):
     try:
-        # Get the barcode object and related book
         barcode_obj = BookBarcode.objects.select_related("book").get(barcode=barcode)
+
         is_user = Profile.objects.filter(barcode=barcode).select_related("user").first()
         is_book = BookBarcode.objects.filter(barcode=barcode).first()
-        
-        
-        
-        
+
         transaction = (
             Transaction.objects.filter(barcode=barcode_obj)
             .exclude(status="returned")
@@ -693,87 +695,109 @@ def api_check_book_status(request, barcode):
             .first()
         )
 
-        print(transaction)
-        
-        
         object_type = ""
         object_name = ""
-        object_pic  = ""
-        mssg = ""        
-        
+        object_pic = None
 
-
+        # ==========================
+        # ✅ USER SCAN (TURNSTILE IN)
+        # ==========================
         if is_user:
-
             try:
                 object_type = "user"
-                object_name = is_user.user.last_name + ', ' + is_user.user.first_name
-                object_pic = is_user.avatar.url
+                object_name = f"{is_user.user.last_name}, {is_user.user.first_name}"
+                object_pic = is_user.avatar.url if is_user.avatar else None
+                status = "AUTHORIZED"
+            except:
+                object_pic = None
+                status = "UNAUTHORIZED"
 
+            # ✅ SAVE TO TURNSTILE LOGS
+            TurnstileAttendanceLog.objects.create(
+                person_id=is_user.barcode,
+                full_name=object_name,
+                gate_name="Library Gate",
+                direction="IN",
+                status=status,
+                timestamp=timezone.now(),
+                remarks="RFID User Scan"
+            )
 
-            except (AttributeError, ValueError):
-                object_pic = None  # or a default image path
-            
-            print({
-                    "identity_type": object_type,
-                    "book_title": object_name,
-                    "profile_pic":object_pic,
-                })
-            
             return JsonResponse({
-                    "identity_type": object_type,
-                    "status": "none",
-                    "book_title": object_name,
-                    "profile_pic":object_pic,
-                })
-      
-                        
-        
+                "identity_type": object_type,
+                "status": "none",
+                "book_title": object_name,
+                "profile_pic": object_pic,
+            })
+
+        # ==========================
+        # ✅ BOOK SCAN
+        # ==========================
         if is_book:
+            object_type = "book"
+            object_name = barcode_obj.book.title
 
-            try:
-                object_type = "book"
-                object_name = barcode_obj.book.title
-                can_be_check_out =  bool(transaction and transaction.status.lower() == "borrowed" and transaction.date_borrowed)
-                return JsonResponse({
-                                    "identity_type": object_type,
-                                    "status": "available",
-                                    "can_be_check_out":can_be_check_out,
-                                    "book_title":object_name,
-                                    "profile_pic": None,
-                                })
-            except (AttributeError, ValueError):
-                object_name = None  # or a default image path
-                        
-                
+            can_be_check_out = bool(
+                transaction and
+                transaction.status.lower() == "borrowed" and
+                transaction.date_borrowed
+            )
+
+            # ✅ SAVE TO TURNSTILE LOGS (BOOK ACTIVITY)
+            TurnstileAttendanceLog.objects.create(
+                person_id=barcode,
+                full_name=object_name,
+                gate_name="Library Gate",
+                direction="IN",
+                status="AUTHORIZED" if can_be_check_out else "UNAUTHORIZED",
+                timestamp=timezone.now(),
+                remarks="Book Scan"
+            )
+
             return JsonResponse({
-                                "identity_type": object_type,
-                                "status": "available",
-                                "can_be_check_out":can_be_check_out,
-                                "book_title":object_name,
-                                "profile_pic": None,
-                            })
-            
-        if barcode_obj is None:
-                return JsonResponse({
-                    "identity_type": "not_found",
-                    "status": "not_found",
-                    "book_title": None,  # assuming transaction has a related book
-                    "profile_pic": None,
-                })
-       
-        
-        return JsonResponse({
-            "identity_type": "available",
-            "status":"available",
-            "book_title": None,
-            "profile_pic":None,
+                "identity_type": object_type,
+                "status": "available",
+                "can_be_check_out": can_be_check_out,
+                "book_title": object_name,
+                "profile_pic": None,
+            })
 
+        # ==========================
+        # ❌ NOT FOUND
+        # ==========================
+        TurnstileAttendanceLog.objects.create(
+            person_id=barcode,
+            full_name="UNKNOWN",
+            gate_name="Main Gate",
+            direction="IN",
+            status="UNAUTHORIZED",
+            timestamp=timezone.now(),
+            remarks="Unregistered Barcode"
+        )
+
+        return JsonResponse({
+            "identity_type": "not_found",
+            "status": "not_found",
+            "book_title": None,
+            "profile_pic": None,
         })
 
     except BookBarcode.DoesNotExist:
-        print("not found")
-        return JsonResponse({"status": "not_found"})
+
+        # ✅ STILL LOG UNKNOWN SCAN
+        TurnstileAttendanceLog.objects.create(
+            person_id=barcode,
+            full_name="UNKNOWN",
+            gate_name="Main Gate",
+            direction="IN",
+            status="UNAUTHORIZED",
+            timestamp=timezone.now(),
+            remarks="Barcode Not Found in System"
+        )
+
+        return JsonResponse({"status": "not_found"})    
+
+
 # -------------------------------Collection------------------------------------------------
 
 # LIST COLLECTIONS WITH BOOK COUNT

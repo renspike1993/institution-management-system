@@ -296,21 +296,6 @@
 				fetch(`/library/api/check-book/${value}/`)
 					.then((response) => response.json())
 					.then((data) => {
-						// resp = {
-						// 	id: Date.now(),
-						// 	value: value + "✅",
-						// 	title: "✅ Unauthorized - " + data.book_title,
-						// 	status: "Student",
-						// 	extra: `Borrower: ${data.borrower}<br>Date: ${data.date_borrowed}`,
-						// 	timestamp: new Date(),
-						// 	time: new Date().toLocaleTimeString(),
-						// 	date: new Date().toLocaleDateString(),
-						// 	image: imageUrl,
-						// 	book_title: data.book_title,
-						// 	borrower: data.borrower,
-						// 	date_borrowed: data.date_borrowed,
-						// 	profile_pic: imageUrl,
-						// };
 
 						var is_book = data.identity_type == "book";
 						var is_user = data.identity_type == "user";
