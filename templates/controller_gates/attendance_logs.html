@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}Turnstile Attendance{% endblock %}
+{% block content %}
+
+<div class="bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
+	<!-- Table Header -->
+	<div
+		class="px-5 py-4 border-b border-gray-200 bg-gray-50 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+
+		<!-- LEFT: TITLE -->
+		<h2 class="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+			<i class="fas fa-door-open text-accent-500"></i>
+			<span>Turnstile Attendance Logs</span>
+		</h2>
+
+		<!-- CENTER: SEARCH -->
+		<form method="get" class="flex gap-2 w-full md:max-w-md">
+			<input type="text" name="search" value="{{ search }}"
+				placeholder="Search name, ID, gate..."
+				class="border px-3 py-2 rounded w-full" />
+			<button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">
+				Search
+			</button>
+		</form>
+
+	</div>
+
+	{% if logs %}
+	<div class="overflow-x-auto">
+		<table class="w-full text-sm">
+			<thead class="bg-gray-50 border-b border-gray-200">
+				<tr>
+					<th class="px-4 py-2 text-left font-semibold text-gray-600 uppercase">ID</th>
+					<th class="px-4 py-2 text-left font-semibold text-gray-600 uppercase">Full Name</th>
+					<th class="px-4 py-2 text-left font-semibold text-gray-600 uppercase">Person ID</th>
+					<th class="px-4 py-2 text-left font-semibold text-gray-600 uppercase">Gate</th>
+					<th class="px-4 py-2 text-left font-semibold text-gray-600 uppercase">Direction</th>
+					<th class="px-4 py-2 text-left font-semibold text-gray-600 uppercase">Status</th>
+					<th class="px-4 py-2 text-left font-semibold text-gray-600 uppercase">Date & Time</th>
+				</tr>
+			</thead>
+			<tbody class="divide-y divide-gray-200">
+				{% for log in logs %}
+				<tr class="hover:bg-gray-50 transition-colors duration-150 group">
+
+					<td class="px-4 py-2 font-mono text-gray-900">#{{ log.id }}</td>
+
+					<td class="px-4 py-2 truncate font-medium text-gray-900">
+						{{ log.full_name }}
+					</td>
+
+					<td class="px-4 py-2 font-mono bg-gray-100 px-2 py-1 rounded">
+						{{ log.person_id }}
+					</td>
+
+					<td class="px-4 py-2 text-gray-700">
+						{{ log.gate_name }}
+					</td>
+
+					<td class="px-4 py-2">
+						{% if log.direction == "IN" %}
+							<span class="px-2 py-1 text-xs rounded bg-green-100 text-green-700 font-semibold">
+								ENTRY
+							</span>
+						{% else %}
+							<span class="px-2 py-1 text-xs rounded bg-orange-100 text-orange-700 font-semibold">
+								EXIT
+							</span>
+						{% endif %}
+					</td>
+
+					<td class="px-4 py-2">
+						{% if log.status == "AUTHORIZED" %}
+							<span class="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700 font-semibold">
+								AUTHORIZED
+							</span>
+						{% else %}
+							<span class="px-2 py-1 text-xs rounded bg-red-100 text-red-700 font-semibold">
+								UNAUTHORIZED
+							</span>
+						{% endif %}
+					</td>
+
+					<td class="px-4 py-2 text-gray-500">
+						{{ log.timestamp|date:"M j, Y h:i A" }}
+					</td>
+
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+		<!-- PAGINATION -->
+		<div class="flex justify-center items-center gap-2 mt-6">
+			{% if logs.has_previous %}
+			<a href="?page=1&search={{ search }}" class="px-3 py-1 border rounded">First</a>
+			<a href="?page={{ logs.previous_page_number }}&search={{ search }}"
+				class="px-3 py-1 border rounded">Prev</a>
+			{% endif %}
+
+			<span class="px-3 py-1">
+				Page {{ logs.number }} of {{ logs.paginator.num_pages }}
+			</span>
+
+			{% if logs.has_next %}
+			<a href="?page={{ logs.next_page_number }}&search={{ search }}"
+				class="px-3 py-1 border rounded">Next</a>
+			<a href="?page={{ logs.paginator.num_pages }}&search={{ search }}"
+				class="px-3 py-1 border rounded">Last</a>
+			{% endif %}
+		</div>
+	</div>
+
+	{% else %}
+	<!-- Empty State -->
+	<div class="text-center py-16">
+		<div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+			<i class="fas fa-door-closed text-gray-400 text-2xl"></i>
+		</div>
+		<h3 class="text-lg font-semibold text-gray-900 mb-2">No attendance logs found</h3>
+		<p class="text-gray-600 mb-4 text-sm">Turnstile logs will appear here once scanning starts.</p>
+	</div>
+	{% endif %}
+</div>
+
+{% endblock %}

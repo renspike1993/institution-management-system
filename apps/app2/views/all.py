@@ -683,10 +683,6 @@ def api_check_book_status(request, barcode):
         is_book = BookBarcode.objects.filter(barcode=barcode).first()
         
         
-        try:
-            profile_pic_url = is_user.avatar.url
-        except (AttributeError, ValueError):
-            profile_pic_url = None  # or a default image path
         
         
         transaction = (
@@ -700,54 +696,61 @@ def api_check_book_status(request, barcode):
         print(transaction)
         
         
-        
+        object_type = ""
+        object_name = ""
+        object_pic  = ""
+        mssg = ""        
         
 
+
         if is_user:
-            print("👤 It is a user")
-            print(profile_pic_url)
-    
+
+            try:
+                object_type = "user"
+                object_name = is_user.user.last_name + ', ' + is_user.user.first_name
+                object_pic = is_user.avatar.url
+
+
+            except (AttributeError, ValueError):
+                object_pic = None  # or a default image path
+            
             print({
-                "identity_type": "user",
-                "status": "none",
-                "book_title": is_user.user.last_name + ', ' + is_user.user.first_name,
-                "profile_pic":profile_pic_url,
-            })
+                    "identity_type": object_type,
+                    "book_title": object_name,
+                    "profile_pic":object_pic,
+                })
+            
             return JsonResponse({
-                "identity_type": "user",
-                "status": "none",
-                "book_title": is_user.user.last_name + ', ' + is_user.user.first_name,
-                "profile_pic":profile_pic_url,
-            })
+                    "identity_type": object_type,
+                    "status": "none",
+                    "book_title": object_name,
+                    "profile_pic":object_pic,
+                })
+      
                         
         
         if is_book:
-            print("📘 It is a book")
-            
-            
-                
+
             try:
-                book_title = barcode_obj.book.title
-                
+                object_type = "book"
+                object_name = barcode_obj.book.title
+                can_be_check_out =  bool(transaction and transaction.status.lower() == "borrowed" and transaction.date_borrowed)
+                return JsonResponse({
+                                    "identity_type": object_type,
+                                    "status": "available",
+                                    "can_be_check_out":can_be_check_out,
+                                    "book_title":object_name,
+                                    "profile_pic": None,
+                                })
             except (AttributeError, ValueError):
-                book_title = None  # or a default image path
-            
-            can_be_check_out =  bool(transaction and transaction.status.lower() == "borrowed" and transaction.date_borrowed)
-            
-            print({
-                                "identity_type": "available",
-                                "status": "available",
-                                "can_be_check_out":can_be_check_out,
-                                "book_title":barcode_obj.book.title,
-                                "profile_pic": None,
-                            })
-            
+                object_name = None  # or a default image path
+                        
                 
             return JsonResponse({
-                                "identity_type": "book",
+                                "identity_type": object_type,
                                 "status": "available",
                                 "can_be_check_out":can_be_check_out,
-                                "book_title":barcode_obj.book.title,
+                                "book_title":object_name,
                                 "profile_pic": None,
                             })
             
@@ -758,43 +761,7 @@ def api_check_book_status(request, barcode):
                     "book_title": None,  # assuming transaction has a related book
                     "profile_pic": None,
                 })
-            
-        #     if transaction and transaction.status.lower() == "borrowed" and transaction.date_borrowed:
-        #             # Book is currently borrowed
-        #             return JsonResponse({
-        #                 "status": "available",
-        #                 "book_title": barcode_obj.book.title,
-        #                 "borrower": f"{transaction.borrower.first_name} {transaction.borrower.last_name}",
-        #                 "date_borrowed": transaction.date_borrowed.strftime("%Y-%m-%d %H:%M"),
-        #                 "profile_pic":profile_pic_url,
-        #             })
-
-        # user_barcode = Profile.objects.filter(barcode=barcode).first()
-
-        # profile = Profile.objects.get(barcode=barcode)
-
-        # print("📚 Scanned Book User:", user_barcode)
-
-        # Check the latest transaction that is NOT returned
-        # transaction = (
-        #     Transaction.objects.filter(barcode=barcode_obj)
-        #     .exclude(status="returned")
-        #     .select_related("borrower")
-        #     .order_by("-id")
-        #     .first()
-        # )
-
-        # if transaction and transaction.status.lower() == "borrowed" and transaction.date_borrowed:
-        #     # Book is currently borrowed
-        #     return JsonResponse({
-        #         "status": "borrowed",
-        #         "book_title": barcode_obj.book.title,
-        #         "borrower": f"{transaction.borrower.first_name} {transaction.borrower.last_name}",
-        #         "date_borrowed": transaction.date_borrowed.strftime("%Y-%m-%d %H:%M"),
-        #         "profile_pic":profile_pic_url,
-        #     })
-
-        # If no transaction or returned, the book is available
+       
         
         return JsonResponse({
             "identity_type": "available",
