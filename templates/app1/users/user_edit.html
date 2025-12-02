@@ -2,39 +2,90 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="bg-white shadow rounded-lg p-5 max-w-xl mx-auto">
-    <h2 class="font-semibold text-lg mb-4">{{ title }}</h2>
-    <form method="POST" enctype="multipart/form-data" class="space-y-4">
-        {% csrf_token %}
-        
-        <!-- User Fields -->
-        <h3 class="font-semibold text-gray-700">User Information</h3>
-        {% for field in user_form %}
-        <div>
-            <label class="block text-sm font-semibold text-gray-700">{{ field.label }}</label>
-            {{ field }}
-            {% if field.errors %}
-            <p class="text-xs text-red-600">{{ field.errors }}</p>
-            {% endif %}
-        </div>
-        {% endfor %}
-        
-        <!-- Profile Fields -->
-        <h3 class="font-semibold text-gray-700 mt-4">Profile Information</h3>
-        {% for field in profile_form %}
-        <div>
-            <label class="block text-sm font-semibold text-gray-700">{{ field.label }}</label>
-            {{ field }}
-            {% if field.errors %}
-            <p class="text-xs text-red-600">{{ field.errors }}</p>
-            {% endif %}
-        </div>
-        {% endfor %}
 
-        <div class="flex gap-2 mt-4">
-            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Save</button>
-            <a href="{% url 'user_list' %}" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Cancel</a>
+<!-- Header (MATCHES USER DETAILS STYLE) -->
+<div class="flex items-center p-3 my-3 text-white bg-purple-600 rounded-md shadow">
+    <i class="fas fa-user-edit text-3xl mr-3"></i>
+    <div>
+        <h1 class="text-base font-semibold leading-tight">{{ title }}</h1>
+        <small class="text-purple-200 text-xs">User Management</small>
+    </div>
+</div>
+
+<!-- Form Card (MATCHES USER INFO CARD STYLE) -->
+<div class="bg-white shadow rounded-lg p-5 mb-6">
+    <!-- PROFILE IMAGE PREVIEW -->
+    <div class="flex items-center gap-4 mb-4">
+        {% if profile_form.instance.avatar %}
+        <img src="{{ profile_form.instance.avatar.url }}" class="w-20 h-20 rounded-full object-cover border shadow"
+            alt="Profile Picture">
+        {% else %}
+        <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center border">
+            <i class="fas fa-user text-gray-400 text-2xl"></i>
         </div>
+        {% endif %}
+
+        <div>
+            <p class="text-sm font-semibold text-gray-700">Profile Picture</p>
+            <p class="text-xs text-gray-500">Upload a new image to replace</p>
+        </div>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- USER INFORMATION -->
+        <h2 class="text-base font-semibold mb-3 text-gray-700 border-b pb-1">
+            User Information
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for field in user_form %}
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">
+                    {{ field.label }}
+                </label>
+                {{ field }}
+                {% if field.errors %}
+                <p class="text-xs text-red-600 mt-1">{{ field.errors }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- PROFILE INFORMATION -->
+        <h2 class="text-base font-semibold mt-6 mb-3 text-gray-700 border-b pb-1">
+            Profile Information
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for field in profile_form %}
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">
+                    {{ field.label }}
+                </label>
+                {{ field }}
+                {% if field.errors %}
+                <p class="text-xs text-red-600 mt-1">{{ field.errors }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- ACTION BUTTONS (MATCH STYLE) -->
+        <div class="flex justify-end mt-6 gap-2">
+            <button type="submit"
+                class="px-3 py-1.5 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-xs flex items-center gap-1">
+                <i class="fas fa-save text-xs"></i> Save
+            </button>
+
+            <a href="{% url 'user_list' %}"
+                class="px-3 py-1.5 bg-gray-500 text-white rounded hover:bg-gray-600 text-xs flex items-center gap-1">
+                <i class="fas fa-arrow-left text-xs"></i> Cancel
+            </a>
+        </div>
+
     </form>
 </div>
+
 {% endblock %}

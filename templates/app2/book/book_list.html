@@ -2,19 +2,33 @@
 
 <div class="bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
 	<!-- Table Header -->
-	<div class="px-5 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+	<div
+		class="px-5 py-4 border-b border-gray-200 bg-gray-50 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+
+		<!-- LEFT: TITLE -->
 		<h2 class="text-lg font-semibold text-gray-900 flex items-center space-x-2">
 			<i class="fas fa-layer-group text-accent-500"></i>
 			<span>Book Lists</span>
 		</h2>
 
-		{% if perms.app2.add_book %}
-		<a href="{% url 'book_create' %}" class="px-3 py-2 bg-accent-500 text-white text-sm font-medium rounded hover:bg-accent-600 flex items-center gap-1"> <i class="fas fa-plus text-xs"></i> New </a>
-		{% endif %}
-		<form method="get" class="flex gap-2 mb-4">
-			<input type="text" name="search" value="{{ search }}" placeholder="Search title, author, control #, ISBN" class="border px-3 py-2 rounded w-full" />
-			<button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Search</button>
+		<!-- CENTER: SEARCH -->
+		<form method="get" class="flex gap-2 w-full md:max-w-md">
+			<input type="text" name="search" value="{{ search }}" placeholder="Search title, author, control #, ISBN"
+				class="border px-3 py-2 rounded w-full" />
+			<button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">
+				Search
+			</button>
 		</form>
+
+		<!-- RIGHT: NEW BUTTON -->
+		{% if perms.app2.add_book %}
+		<a href="{% url 'book_create' %}"
+			class="px-4 py-2 bg-accent-500 text-white text-sm font-medium rounded hover:bg-accent-600 flex items-center gap-1 whitespace-nowrap">
+			<i class="fas fa-plus text-xs"></i>
+			New
+		</a>
+		{% endif %}
+
 	</div>
 
 	{% if books %}
@@ -41,7 +55,8 @@
 							<div class="w-6 h-6 bg-accent-100 rounded flex items-center justify-center">
 								<i class="fas fa-book text-accent-600 text-xs"></i>
 							</div>
-							<span class="font-medium text-gray-900 truncate">{{ book.title }}</span>
+							<span class="font-medium text-gray-900 truncate">{{ book.title|truncatechars:30 }}
+							</span>
 						</div>
 					</td>
 
@@ -52,15 +67,18 @@
 
 					<td class="px-4 py-2 text-right opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
 						{% if perms.app2.view_book %}
-						<a href="{% url 'book_detail' book.pk %}" class="p-1 text-gray-500 hover:text-accent-600 rounded" title="View">
+						<a href="{% url 'book_detail' book.pk %}"
+							class="p-1 text-gray-500 hover:text-accent-600 rounded" title="View">
 							<i class="fas fa-eye text-xs"></i>
 						</a>
 						{% endif %} {% if perms.app2.change_book %}
-						<a href="{% url 'book_update' book.pk %}" class="p-1 text-gray-500 hover:text-yellow-600 rounded" title="Edit">
+						<a href="{% url 'book_update' book.pk %}"
+							class="p-1 text-gray-500 hover:text-yellow-600 rounded" title="Edit">
 							<i class="fas fa-pen text-xs"></i>
 						</a>
 						{% endif %} {% if perms.app2.delete_book %}
-						<a href="{% url 'book_delete' book.pk %}" class="p-1 text-gray-500 hover:text-red-600 rounded" title="Delete">
+						<a href="{% url 'book_delete' book.pk %}" class="p-1 text-gray-500 hover:text-red-600 rounded"
+							title="Delete">
 							<i class="fas fa-trash text-xs"></i>
 						</a>
 						{% endif %}
@@ -72,14 +90,16 @@
 		<div class="flex justify-center items-center gap-2 mt-6">
 			{% if books.has_previous %}
 			<a href="?page=1&search={{ search }}" class="px-3 py-1 border rounded">First</a>
-			<a href="?page={{ books.previous_page_number }}&search={{ search }}" class="px-3 py-1 border rounded">Prev</a>
+			<a href="?page={{ books.previous_page_number }}&search={{ search }}"
+				class="px-3 py-1 border rounded">Prev</a>
 			{% endif %}
 
 			<span class="px-3 py-1"> Page {{ books.number }} of {{ books.paginator.num_pages }} </span>
 
 			{% if books.has_next %}
 			<a href="?page={{ books.next_page_number }}&search={{ search }}" class="px-3 py-1 border rounded">Next</a>
-			<a href="?page={{ books.paginator.num_pages }}&search={{ search }}" class="px-3 py-1 border rounded">Last</a>
+			<a href="?page={{ books.paginator.num_pages }}&search={{ search }}"
+				class="px-3 py-1 border rounded">Last</a>
 			{% endif %}
 		</div>
 	</div>
@@ -94,7 +114,9 @@
 		<p class="text-gray-600 mb-4 text-sm">Start adding books to your library collection.</p>
 
 		{% if perms.app2.add_book %}
-		<a href="{% url 'book_create' %}" class="px-4 py-2 bg-accent-500 text-white rounded hover:bg-accent-600 text-sm flex items-center gap-1 mx-auto"> <i class="fas fa-plus text-xs"></i> Add Your First Book </a>
+		<a href="{% url 'book_create' %}"
+			class="px-4 py-2 bg-accent-500 text-white rounded hover:bg-accent-600 text-sm flex items-center gap-1 mx-auto">
+			<i class="fas fa-plus text-xs"></i> Add Your First Book </a>
 		{% endif %}
 	</div>
 	{% endif %}

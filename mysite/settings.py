@@ -50,40 +50,6 @@ MIDDLEWARE = [
 ]
 import logging
 
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-
-    "formatters": {
-        "verbose": {
-            "format": "[{asctime}] {levelname} {message}",
-            "style": "{",
-        },
-        "request_verbose": {
-            "format": "[{asctime}] {levelname} {method} {path} "
-                      "User={user} IP={ip} Status={status_code}",
-            "style": "{",
-        },
-    },
-
-    "handlers": {
-        "request_file": {
-            "level": "INFO",
-            "class": "logging.FileHandler",
-            "filename": BASE_DIR / "requests.log",
-            "formatter": "request_verbose",
-        },
-    },
-
-    "loggers": {
-        "django.request": {
-            "handlers": ["request_file"],
-            "level": "INFO",
-            "propagate": True,
-        },
-    },
-}
-
 ROOT_URLCONF = 'mysite.urls'
 
 

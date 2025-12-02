@@ -672,19 +672,23 @@ def all_borrowed_books(request):
     return render(request, "app2/book/borrowed_all_list.html", context)
 
 
+
+
 @login_required
 def api_check_book_status(request, barcode):
     try:
         # Get the barcode object and related book
         barcode_obj = BookBarcode.objects.select_related("book").get(barcode=barcode)
-
-        user_barcode = Profile.objects.filter(barcode=barcode).first()
-
-        # profile = Profile.objects.get(barcode=barcode)
-
-        print("📚 Scanned Book User:", user_barcode)
-
-        # Check the latest transaction that is NOT returned
+        is_user = Profile.objects.filter(barcode=barcode).select_related("user").first()
+        is_book = BookBarcode.objects.filter(barcode=barcode).first()
+        
+        
+        try:
+            profile_pic_url = is_user.avatar.url
+        except (AttributeError, ValueError):
+            profile_pic_url = None  # or a default image path
+        
+        
         transaction = (
             Transaction.objects.filter(barcode=barcode_obj)
             .exclude(status="returned")
@@ -693,22 +697,115 @@ def api_check_book_status(request, barcode):
             .first()
         )
 
-        if transaction and transaction.status.lower() == "borrowed" and transaction.date_borrowed:
-            # Book is currently borrowed
-            return JsonResponse({
-                "status": "borrowed",
-                "book_title": barcode_obj.book.title,
-                "borrower": f"{transaction.borrower.first_name} {transaction.borrower.last_name}",
-                "date_borrowed": transaction.date_borrowed.strftime("%Y-%m-%d %H:%M"),
+        print(transaction)
+        
+        
+        
+        
+
+        if is_user:
+            print("👤 It is a user")
+            print(profile_pic_url)
+    
+            print({
+                "identity_type": "user",
+                "status": "none",
+                "book_title": is_user.user.last_name + ', ' + is_user.user.first_name,
+                "profile_pic":profile_pic_url,
             })
+            return JsonResponse({
+                "identity_type": "user",
+                "status": "none",
+                "book_title": is_user.user.last_name + ', ' + is_user.user.first_name,
+                "profile_pic":profile_pic_url,
+            })
+                        
+        
+        if is_book:
+            print("📘 It is a book")
+            
+            
+                
+            try:
+                book_title = barcode_obj.book.title
+                
+            except (AttributeError, ValueError):
+                book_title = None  # or a default image path
+            
+            can_be_check_out =  bool(transaction and transaction.status.lower() == "borrowed" and transaction.date_borrowed)
+            
+            print({
+                                "identity_type": "available",
+                                "status": "available",
+                                "can_be_check_out":can_be_check_out,
+                                "book_title":barcode_obj.book.title,
+                                "profile_pic": None,
+                            })
+            
+                
+            return JsonResponse({
+                                "identity_type": "book",
+                                "status": "available",
+                                "can_be_check_out":can_be_check_out,
+                                "book_title":barcode_obj.book.title,
+                                "profile_pic": None,
+                            })
+            
+        if barcode_obj is None:
+                return JsonResponse({
+                    "identity_type": "not_found",
+                    "status": "not_found",
+                    "book_title": None,  # assuming transaction has a related book
+                    "profile_pic": None,
+                })
+            
+        #     if transaction and transaction.status.lower() == "borrowed" and transaction.date_borrowed:
+        #             # Book is currently borrowed
+        #             return JsonResponse({
+        #                 "status": "available",
+        #                 "book_title": barcode_obj.book.title,
+        #                 "borrower": f"{transaction.borrower.first_name} {transaction.borrower.last_name}",
+        #                 "date_borrowed": transaction.date_borrowed.strftime("%Y-%m-%d %H:%M"),
+        #                 "profile_pic":profile_pic_url,
+        #             })
+
+        # user_barcode = Profile.objects.filter(barcode=barcode).first()
+
+        # profile = Profile.objects.get(barcode=barcode)
+
+        # print("📚 Scanned Book User:", user_barcode)
+
+        # Check the latest transaction that is NOT returned
+        # transaction = (
+        #     Transaction.objects.filter(barcode=barcode_obj)
+        #     .exclude(status="returned")
+        #     .select_related("borrower")
+        #     .order_by("-id")
+        #     .first()
+        # )
+
+        # if transaction and transaction.status.lower() == "borrowed" and transaction.date_borrowed:
+        #     # Book is currently borrowed
+        #     return JsonResponse({
+        #         "status": "borrowed",
+        #         "book_title": barcode_obj.book.title,
+        #         "borrower": f"{transaction.borrower.first_name} {transaction.borrower.last_name}",
+        #         "date_borrowed": transaction.date_borrowed.strftime("%Y-%m-%d %H:%M"),
+        #         "profile_pic":profile_pic_url,
+        #     })
 
         # If no transaction or returned, the book is available
+        
         return JsonResponse({
-            "status": "available",
-            "book_title": barcode_obj.book.title,
+            "identity_type": "available",
+            "status":"available",
+            "book_title": None,
+            "profile_pic":None,
+
         })
 
     except BookBarcode.DoesNotExist:
+        print("not found")
         return JsonResponse({"status": "not_found"})
 # -------------------------------Collection------------------------------------------------
 

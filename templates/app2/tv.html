@@ -140,9 +140,6 @@
 	</head>
 
 	<body class="bg-dark text-gray-200 min-h-screen p-4 md:p-6">
-		{% if request.user.is_superuser %}
-		<a href="{% url 'dashboard' %}" class="btn btn-secondary flex items-center gap-1"> <i class="fas fa-arrow-left"></i> Back to Administrator </a>
-		{% endif %}
 
 		<div class="max-w-7xl mx-auto">
 			<div class="grid grid-cols-12 gap-6">
@@ -192,7 +189,7 @@
 
 									<div class="mt-4 glass-effect p-3 rounded-xl">
 										<p class="text-gray-400 text-xs">Email</p>
-										<p class="text-sm break-all">angela@moist.edu</p>
+										<p class="text-sm break-all">vince@moist.edu</p>
 									</div>
 								</div>
 

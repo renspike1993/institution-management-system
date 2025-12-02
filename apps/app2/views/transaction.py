@@ -4,6 +4,8 @@ from ..forms import TransactionForm
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.contrib import messages
+
+
 def transaction_list(request):
     status = request.GET.get("status")   # filter
     q = request.GET.get("q")             # search input
@@ -48,44 +50,28 @@ def transaction_create(request):
 
     return render(request, "app2/transactions/transaction_form.html", {"form": form, "title": "Add Transaction"})
 
-
-# UPDATE
 def transaction_update(request, pk):
     transaction = get_object_or_404(Transaction, pk=pk)
-    book_barcode = transaction.barcode
 
-    # Check latest transaction for this barcode excluding current one
-    latest_transaction = (
-        Transaction.objects
-        .filter(barcode=book_barcode)
-        .exclude(pk=transaction.pk)
-        .exclude(status__in=["returned", "reserved"])  # Only consider unavailable statuses
-        .order_by("-id")
-        .first()
-    )
-
-    if latest_transaction:
-        messages.error(
-            request,
-            f'Cannot update this transaction. The book "{book_barcode.book.title}" is currently {latest_transaction.status}.'
-        )
+    # ✅ SIMPLE NULL-SAFE BOOK ACCESS (THIS FIXES YOUR ERROR)
+    if not transaction.book:
+        messages.error(request, "This transaction has no valid book assigned.")
         return redirect("transaction_list")
 
     if request.method == "POST":
         form = TransactionForm(request.POST, instance=transaction)
         if form.is_valid():
             form.save()
-            messages.success(request, "Transaction updated successfully!")
+            messages.success(request, "Transaction updated successfully.")
             return redirect("transaction_list")
     else:
         form = TransactionForm(instance=transaction)
 
-    return render(
-        request,
-        "app2/transactions/transaction_form.html",
-        {"form": form, "title": "Edit Transaction"}
-    )
-
+    return render(request, "app2/transactions/transaction_form.html", {
+        "form": form
+    })
+    
+    
 # DELETE
 def transaction_delete(request, pk):
     transaction = get_object_or_404(Transaction, pk=pk)
