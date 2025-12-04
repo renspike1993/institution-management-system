@@ -313,7 +313,7 @@
 
 
                     if (data.can_be_check_out) {
-
+                        successBeep();
                         alert("can be checked out!");
                         return;
                     }
@@ -339,15 +339,30 @@
 
                             showAlert("success", "Student succesfully login!", ` <br><h1>Welcome  ${data.book_title} !</h1>`, 3000);
 
-                            alertBeep();
+                            successBeep();
                             updateScannerStatus("error", "Book is borrowed");
 
                         }
-                        alert("it is a user");
+                        // alert("it is a user");
                         return;
                     }
 
+                    var book_status = "Status:<span style='color:red'> Cannot be checkout</span>";
+
+                    if (data.can_be_check_out) {
+                        book_status = `Borrower: ${data.borrower}<br>Date: ${data.date_borrowed}`
+                        alertBeep();
+                    }
+
                     if (data.identity_type == 'book') {
+
+                        if (data.can_be_check_out) {
+                            successBeep();
+                        } else {
+
+                            alertBeep();
+                        }
+
                         if (shouldTriggerUnauthorized(value)) {
                             const imageUrl = data.profile_pic;
                             addScanItem({
@@ -355,7 +370,7 @@
                                 value: value + "✅",
                                 title: "✅ Unauthorized - " + data.book_title,
                                 status: "Book",
-                                extra: `Borrower: ${data.borrower}<br>Date: ${data.date_borrowed}`,
+                                extra: book_status,
                                 timestamp: new Date(),
                                 time: new Date().toLocaleTimeString(),
                                 date: new Date().toLocaleDateString(),
@@ -366,13 +381,13 @@
                                 profile_pic: imageUrl,
                             });
 
-                            showAlert("success", "Student succesfully login!", ` <br><h1>Welcome  ${data.book_title} !</h1>`, 3000);
+                            showAlert("error", "Cannot be check out", ` <br><h1>Borrow it first.</h1>`, 3000);
 
                             alertBeep();
                             updateScannerStatus("error", "Book is borrowed");
 
                         }
-                        alert("it is a book");
+                        // alert("it is a book");
                         return;
                     }
 
