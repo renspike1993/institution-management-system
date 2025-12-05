@@ -31,7 +31,7 @@ urlpatterns = [
     # Your Apps
     path('registrar/', include('apps.app1.urls')),
     path('library/', include('apps.app2.urls')),
-    path('gates/', include('apps.app3.urls')),
+    path('gates/', include('apps.controller_gates.urls')),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
