@@ -80,8 +80,52 @@
 
 
 
+			<!-- Navigation -->
+
+			<div class="px-4 py-5 border-b border-gray-700">
+				<div class="flex items-center space-x-2 lg:space-x-3">
+					<div
+						class="w-8 h-8 rounded-md bg-gradient-to-r from-accent-500 to-purple-600 flex items-center justify-center text-white text-xs shadow-lg">
+						<i class="fa-solid fa-cube"></i>
+					</div>
+
+	
+					<span class="hidden lg:block text-sm tracking-wide font-semibold text-white"> REGISTRAR<span
+							class="text-accent-400"></span> </span>
+			
 
 
+				</div>
+			</div>
+
+
+
+
+			<!-- User -->
+			<div class="px-4 py-4 border-b border-gray-700 flex items-center space-x-3">
+				<div
+					class="h-8 w-8 rounded-full bg-gradient-to-r from-accent-500 to-purple-600 text-white flex items-center justify-center text-xs shadow-md">
+					{{ request.user.first_name|slice:":1" }}{{ request.user.last_name|slice:":1" }}
+				</div>
+
+				<div class="hidden lg:block">
+					<p class="text-xs font-medium text-white">
+						{{ request.user.get_full_name|default:request.user.username }}
+					</p>
+
+					<p class="text-[11px] text-gray-400">
+						{% if request.user.is_superuser %}
+						Super Admin
+						{% elif request.user.is_staff %}
+						Staff
+						{% elif request.user.groups.first %}
+						{{ request.user.groups.first.name }}
+						{% else %}
+						User
+						{% endif %}
+					</p>
+				</div>
+			</div>
 
 
 			<!-- Navigation -->

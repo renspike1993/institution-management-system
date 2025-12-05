@@ -642,10 +642,16 @@ def bookbarcode_delete(request, book_id, barcode_id):
     return redirect("book_detail", pk=book_id)
 # ----------------------------------------------------------------------------------
 
+# @login_required
+# def security_logs(request):
+#     return render(request, 'app2/logs.html')
+
+from apps.controller_gates.models import TurnstileAttendanceLog  # adjust path if needed
+
 @login_required
 def security_logs(request):
-    return render(request, 'app2/logs.html')
-
+    logs = TurnstileAttendanceLog.objects.all()[:10]  # last 10 logs
+    return render(request, 'app2/logs.html', {'logs': logs})
 
 # -------------------------------
 

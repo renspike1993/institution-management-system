@@ -1,125 +1,146 @@
-{% extends "base.html" %} {% block title %}Books{% endblock %} {% block content %}
+{% extends "base.html" %}
+{% block title %}Books{% endblock %}
+{% block content %}
 
-<div class="bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
-	<!-- Table Header -->
-	<div
-		class="px-5 py-4 border-b border-gray-200 bg-gray-50 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+<div class="min-h-screen bg-gray-50 py-6 px-4">
+    <div class="max-w-6xl mx-auto">
 
-		<!-- LEFT: TITLE -->
-		<h2 class="text-lg font-semibold text-gray-900 flex items-center space-x-2">
-			<i class="fas fa-layer-group text-accent-500"></i>
-			<span>Book Lists</span>
-		</h2>
+        <!-- PAGE HEADER -->
+        <div class="mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                        <div class="p-3 bg-blue-600 rounded-lg shadow text-white">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        Books
+                    </h1>
+                    <p class="text-gray-600 mt-1 text-sm">Manage library books</p>
+                </div>
 
-		<!-- CENTER: SEARCH -->
-		<form method="get" class="flex gap-2 w-full md:max-w-md">
-			<input type="text" name="search" value="{{ search }}" placeholder="Search title, author, control #, ISBN"
-				class="border px-3 py-2 rounded w-full" />
-			<button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">
-				Search
-			</button>
-		</form>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <form method="GET" class="relative">
+                        <input type="text" name="search" value="{{ search }}" placeholder="Search title, author, ISBN"
+                            class="pl-10 pr-4 py-2.5 w-full sm:w-64 bg-white border border-gray-300 rounded-lg shadow-sm 
+                               focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                            <i class="fas fa-search"></i>
+                        </div>
+                    </form>
 
-		<!-- RIGHT: NEW BUTTON -->
-		{% if perms.app2.add_book %}
-		<a href="{% url 'book_create' %}"
-			class="px-4 py-2 bg-accent-500 text-white text-sm font-medium rounded hover:bg-accent-600 flex items-center gap-1 whitespace-nowrap">
-			<i class="fas fa-plus text-xs"></i>
-			New
-		</a>
-		{% endif %}
+                    <div class="flex gap-3">
+                        {% if perms.app2.add_book %}
+                        <a href="{% url 'book_create' %}"
+                            class="px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm shadow hover:bg-blue-700 flex items-center gap-2">
+                            <i class="fas fa-plus"></i> New Book
+                        </a>
+                        {% endif %}
+                    </div>
 
-	</div>
+                </div>
+            </div>
+        </div>
 
-	{% if books %}
-	<div class="overflow-x-auto">
-		<table class="w-full text-sm">
-			<thead class="bg-gray-50 border-b border-gray-200">
-				<tr>
-					<th class="px-4 py-2 text-left font-semibold text-gray-600 uppercase">ID</th>
-					<th class="px-4 py-2 text-left font-semibold text-gray-600 uppercase">Title</th>
-					<th class="px-4 py-2 text-left font-semibold text-gray-600 uppercase">Author</th>
-					<th class="px-4 py-2 text-left font-semibold text-gray-600 uppercase">ISBN</th>
-					<th class="px-4 py-2 text-left font-semibold text-gray-600 uppercase">Available</th>
-					<th class="px-4 py-2 text-left font-semibold text-gray-600 uppercase">Added</th>
-					<th class="px-4 py-2"></th>
-				</tr>
-			</thead>
-			<tbody class="divide-y divide-gray-200">
-				{% for book in books %}
-				<tr class="hover:bg-gray-50 transition-colors duration-150 group">
-					<td class="px-4 py-2 font-mono text-gray-900">#{{ book.id }}</td>
+        {% if books %}
+        <div class="bg-white rounded-lg shadow border border-gray-200">
 
-					<td class="px-4 py-2 truncate">
-						<div class="flex items-center gap-2">
-							<div class="w-6 h-6 bg-accent-100 rounded flex items-center justify-center">
-								<i class="fas fa-book text-accent-600 text-xs"></i>
-							</div>
-							<span class="font-medium text-gray-900 truncate">{{ book.title|truncatechars:30 }}
-							</span>
-						</div>
-					</td>
+            <!-- TABLE HEADER -->
+            <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-gray-800">
+                    Books ({{ books.paginator.count }})
+                </h2>
+            </div>
 
-					<td class="px-4 py-2 truncate text-gray-700">{{ book.author }}</td>
-					<td class="px-4 py-2 font-mono bg-gray-100 px-2 py-1 rounded">{{ book.isbn }}</td>
-					<td class="px-4 py-2 font-semibold text-gray-800">{{ book.borrowed_total }} / {{ book.barcodes.count }}</td>
-					<td class="px-4 py-2 text-gray-500">{{ book.created_at|date:"M j, Y" }}</td>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="px-4 py-3 text-left font-medium text-gray-700">ID</th>
+                            <th class="px-4 py-3 text-left font-medium text-gray-700">Title</th>
+                            <th class="px-4 py-3 text-left font-medium text-gray-700">Author</th>
+                            <th class="px-4 py-3 text-left font-medium text-gray-700">ISBN</th>
+                            <th class="px-4 py-3 text-left font-medium text-gray-700">Available</th>
+                            <th class="px-4 py-3 text-left font-medium text-gray-700">Added</th>
+                            <th class="px-4 py-3 text-left font-medium text-gray-700">Actions</th>
+                        </tr>
+                    </thead>
 
-					<td class="px-4 py-2 text-right opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-						{% if perms.app2.view_book %}
-						<a href="{% url 'book_detail' book.pk %}"
-							class="p-1 text-gray-500 hover:text-accent-600 rounded" title="View">
-							<i class="fas fa-eye text-xs"></i>
-						</a>
-						{% endif %} {% if perms.app2.change_book %}
-						<a href="{% url 'book_update' book.pk %}"
-							class="p-1 text-gray-500 hover:text-yellow-600 rounded" title="Edit">
-							<i class="fas fa-pen text-xs"></i>
-						</a>
-						{% endif %} {% if perms.app2.delete_book %}
-						<a href="{% url 'book_delete' book.pk %}" class="p-1 text-gray-500 hover:text-red-600 rounded"
-							title="Delete">
-							<i class="fas fa-trash text-xs"></i>
-						</a>
-						{% endif %}
-					</td>
-				</tr>
-				{% endfor %}
-			</tbody>
-		</table>
-		<div class="flex justify-center items-center gap-2 mt-6">
-			{% if books.has_previous %}
-			<a href="?page=1&search={{ search }}" class="px-3 py-1 border rounded">First</a>
-			<a href="?page={{ books.previous_page_number }}&search={{ search }}"
-				class="px-3 py-1 border rounded">Prev</a>
-			{% endif %}
+                    <tbody class="divide-y divide-gray-200">
+                        {% for book in books %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-3 font-mono text-gray-900">#{{ book.id }}</td>
+                            <td class="px-4 py-3">{{ book.title }}</td>
+                            <td class="px-4 py-3">{{ book.author }}</td>
+                            <td class="px-4 py-3 font-mono">{{ book.isbn }}</td>
+                            <td class="px-4 py-3 font-semibold text-gray-800">{{ book.borrowed_total }}/{{ book.barcodes.count }}</td>
+                            <td class="px-4 py-3 text-gray-500">{{ book.created_at|date:"M j, Y" }}</td>
 
-			<span class="px-3 py-1"> Page {{ books.number }} of {{ books.paginator.num_pages }} </span>
+                            <td class="px-4 py-3 flex gap-2">
+                                {% if perms.app2.view_book %}
+                                <a href="{% url 'book_detail' book.id %}" class="px-3 py-1 bg-gray-100 text-gray-800 rounded text-xs hover:bg-gray-200">View</a>
+                                {% endif %}
+                                {% if perms.app2.change_book %}
+                                <a href="{% url 'book_update' book.id %}" class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded text-xs hover:bg-yellow-200">Edit</a>
+                                {% endif %}
+                                {% if perms.app2.delete_book %}
+                                <a href="{% url 'book_delete' book.id %}" class="px-3 py-1 bg-red-100 text-red-800 rounded text-xs hover:bg-red-200">Delete</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
 
-			{% if books.has_next %}
-			<a href="?page={{ books.next_page_number }}&search={{ search }}" class="px-3 py-1 border rounded">Next</a>
-			<a href="?page={{ books.paginator.num_pages }}&search={{ search }}"
-				class="px-3 py-1 border rounded">Last</a>
-			{% endif %}
-		</div>
-	</div>
+          <!-- Pagination -->
+{% if books.has_other_pages %}
+<div class="flex justify-center mt-6 space-x-1 text-sm">
+    {% if books.has_previous %}
+    <a href="?page={{ books.previous_page_number }}&search={{ search }}" class="px-3 py-1 border rounded hover:bg-gray-100">Prev</a>
+    {% else %}
+    <span class="px-3 py-1 border rounded text-gray-400 cursor-not-allowed">Prev</span>
+    {% endif %}
 
-	{% else %}
-	<!-- Empty State -->
-	<div class="text-center py-16">
-		<div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-			<i class="fas fa-book-open text-gray-400 text-2xl"></i>
-		</div>
-		<h3 class="text-lg font-semibold text-gray-900 mb-2">No books found</h3>
-		<p class="text-gray-600 mb-4 text-sm">Start adding books to your library collection.</p>
+    {% for num in books.paginator.page_range %}
+        {% if num >= books.number|add:'-2' and num <= books.number|add:'2' %}
+            {% if num == books.number %}
+            <span class="px-3 py-1 bg-blue-600 text-white rounded">{{ num }}</span>
+            {% else %}
+            <a href="?page={{ num }}&search={{ search }}" class="px-3 py-1 border rounded hover:bg-gray-100">{{ num }}</a>
+            {% endif %}
+        {% endif %}
+    {% endfor %}
 
-		{% if perms.app2.add_book %}
-		<a href="{% url 'book_create' %}"
-			class="px-4 py-2 bg-accent-500 text-white rounded hover:bg-accent-600 text-sm flex items-center gap-1 mx-auto">
-			<i class="fas fa-plus text-xs"></i> Add Your First Book </a>
-		{% endif %}
-	</div>
-	{% endif %}
+    {% if books.has_next %}
+    <a href="?page={{ books.next_page_number }}&search={{ search }}" class="px-3 py-1 border rounded hover:bg-gray-100">Next</a>
+    {% else %}
+    <span class="px-3 py-1 border rounded text-gray-400 cursor-not-allowed">Next</span>
+    {% endif %}
+</div>
+{% endif %}
+
+
+            </div>
+
+            {% else %}
+            <!-- Empty State -->
+            <div class="bg-white rounded-lg shadow border border-gray-200 py-12 text-center">
+                <div class="mx-auto w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-book text-blue-500 text-3xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-800">No Books Found</h3>
+                <p class="text-gray-600 text-sm mt-1 mb-6">Click below to add your first book.</p>
+
+                {% if perms.app2.add_book %}
+                <a href="{% url 'book_create' %}" class="px-6 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
+                    + Create Book
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+
 </div>
 
 {% endblock %}

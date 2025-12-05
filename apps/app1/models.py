@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 class Folder(models.Model):
     folder_name = models.CharField(max_length=100, unique=True)
-    folder_capacity = models.PositiveIntegerField()
+    folder_capacity = models.PositiveIntegerField(default=30)
     floor_number = models.CharField(max_length=50)  # or IntegerField if numeric
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -65,3 +65,10 @@ class Student(models.Model):
 
     def __str__(self):
         return f"{self.last_name}, {self.first_name}"
+    
+    
+    
+class DeficientRecord(models.Model):
+    user =  models.OneToOneField(User, on_delete=models.CASCADE)
+    recommendation = models.TextField(blank=True, null=True)
+    comment = models.TextField(blank=True, null=True)
