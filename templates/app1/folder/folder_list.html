@@ -1,95 +1,131 @@
-{% extends "base_registrar.html" %}
+{% extends "base.html" %}
 {% block content %}
 
-<div class="max-w-7xl mx-auto p-6">
+<div class="min-h-screen bg-gray-50 py-6 px-4">
+    <div class="max-w-6xl mx-auto">
 
-    <!-- Header + Add Button -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5 mb-6 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl shadow-lg text-white">
-        <div class="flex items-center gap-4">
-            <i class="fas fa-folder-open text-3xl"></i>
+        <!-- PAGE HEADER -->
+        <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-                <h1 class="text-lg font-semibold">Folders</h1>
-                <p class="text-sm opacity-90">Manage student's requirements and records</p>
+                <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                    <div class="p-3 bg-blue-600 rounded-lg shadow text-white">
+                        <i class="fas fa-folder"></i>
+                    </div>
+                    Folders
+                </h1>
+                <p class="text-gray-600 mt-1 text-sm">Manage folders</p>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3">
+
+                <!-- Search -->
+                <form method="GET" class="relative">
+                    <input type="text" name="search" value="{{ search_query }}" placeholder="Search folders..."
+                        class="pl-10 pr-4 py-2.5 w-full sm:w-64 bg-white border border-gray-300 rounded-lg shadow-sm 
+                               focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                        <i class="fas fa-search"></i>
+                    </div>
+                </form>
+
+                <!-- New Folder Button -->
+                <a href="{% url 'folder_create' %}"
+                   class="px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm shadow hover:bg-blue-700 flex items-center gap-2">
+                    <i class="fas fa-plus"></i> New Folder
+                </a>
             </div>
         </div>
 
-        <!-- ✅ ADD FOLDER BUTTON -->
-        <a href="{% url 'folder_create' %}"
-           class="inline-flex items-center justify-center gap-2 bg-white text-indigo-700 hover:bg-gray-100 px-4 py-2 rounded-lg font-medium shadow transition">
-            <i class="fas fa-plus"></i>
-            Add Folder
-        </a>
-    </div>
+        <!-- FOLDER TABLE -->
+        {% if page_obj %}
+        <div class="bg-white rounded-lg shadow border border-gray-200">
 
-    {% if folders %}
+            <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-gray-800">Folders ({{ page_obj.paginator.count }})</h2>
+            </div>
 
-    <!-- Table -->
-    <div class="bg-white rounded-xl shadow overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="min-w-full text-sm text-left text-gray-700">
-                <thead class="bg-gray-900 text-white text-xs uppercase">
-                    <tr>
-                        <th class="px-4 py-3">Name</th>
-                        <th class="px-4 py-3">Capacity</th>
-                        <th class="px-4 py-3">Floor</th>
-                        <th class="px-4 py-3">Created By</th>
-                        <th class="px-4 py-3">Created At</th>
-                        <th class="px-4 py-3 text-center">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="px-4 py-3 text-left font-medium text-gray-700">Name</th>
+                            <th class="px-4 py-3 text-left font-medium text-gray-700">Created</th>
+                            <th class="px-4 py-3 text-left font-medium text-gray-700">Actions</th>
+                        </tr>
+                    </thead>
 
-                    {% for folder in folders %}
-                    <tr class="hover:bg-gray-50 transition">
-                        <td class="px-4 py-3 font-medium">{{ folder.folder_name }}</td>
-                        <td class="px-4 py-3">{{ folder.folder_capacity }}</td>
-                        <td class="px-4 py-3">{{ folder.floor_number }}</td>
-                        <td class="px-4 py-3">
-                            {{ folder.created_by.get_full_name|default:folder.created_by }}
-                        </td>
-                        <td class="px-4 py-3">
-                            {{ folder.created_at|date:"Y-m-d H:i" }}
-                        </td>
-                        <td class="px-4 py-3 text-center space-x-1">
+                    <tbody class="divide-y divide-gray-200">
+                        {% for folder in page_obj %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-3 font-medium text-gray-900">{{ folder }}</td>
+                            <td class="px-4 py-3 text-gray-500">{{ folder.created_at|date:"M j, Y" }}</td>
+                            <td class="px-4 py-3 flex gap-2">
+                                <a href=""
+                                   class="px-3 py-1 bg-gray-100 text-gray-800 rounded text-xs hover:bg-gray-200">View</a>
+                                <a href="{% url 'folder_update' folder.id %}"
+                                   class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded text-xs hover:bg-yellow-200">Edit</a>
+                                <a href="{% url 'folder_delete' folder.id %}"
+                                   class="px-3 py-1 bg-red-100 text-red-800 rounded text-xs hover:bg-red-200">Delete</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
 
-                            <!-- Edit -->
-                            <a href="{% url 'folder_update' folder.pk %}"
-                               class="inline-flex items-center px-3 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white rounded-md text-xs shadow transition">
-                                <i class="fas fa-pen mr-1"></i> Edit
-                            </a>
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                <div class="flex justify-center mt-6">
+                    <nav class="flex items-center gap-2">
 
-                            <!-- Delete -->
-                            <a href="{% url 'folder_delete' folder.pk %}"
-                               class="inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-md text-xs shadow transition">
-                                <i class="fas fa-trash mr-1"></i> Delete
-                            </a>
+                        {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}"
+                           class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 text-sm">« Prev</a>
+                        {% else %}
+                        <span class="px-3 py-1 bg-gray-100 text-gray-400 rounded text-sm">« Prev</span>
+                        {% endif %}
 
-                        </td>
-                    </tr>
-                    {% endfor %}
+                        {% for page in page_obj.paginator.page_range %}
+                            {% if page >= page_obj.number|add:'-2' and page <= page_obj.number|add:'2' %}
+                                {% if page == page_obj.number %}
+                                <span class="px-3 py-1 bg-blue-600 text-white rounded text-sm">{{ page }}</span>
+                                {% else %}
+                                <a href="?page={{ page }}&search={{ search_query }}"
+                                   class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 text-sm">{{ page }}</a>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
 
-                </tbody>
-            </table>
+                        {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}&search={{ search_query }}"
+                           class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 text-sm">Next »</a>
+                        {% else %}
+                        <span class="px-3 py-1 bg-gray-100 text-gray-400 rounded text-sm">Next »</span>
+                        {% endif %}
+
+                    </nav>
+                </div>
+                {% endif %}
+
+            </div>
         </div>
+
+        {% else %}
+        <!-- Empty State -->
+        <div class="bg-white rounded-lg shadow border border-gray-200 py-12 text-center">
+            <div class="mx-auto w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                <i class="fas fa-folder text-blue-500 text-3xl"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-800">No Folders Found</h3>
+            <p class="text-gray-600 text-sm mt-1 mb-6">Start adding folders to organize your content.</p>
+
+            <a href="{% url 'folder_create' %}" 
+               class="px-6 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
+                + Create Folder
+            </a>
+        </div>
+        {% endif %}
+
     </div>
-
-    {% else %}
-
-    <!-- Empty State -->
-    <div class="bg-white rounded-xl shadow p-6 text-center text-gray-500">
-        <p>No folders yet.</p>
-        <p class="text-sm mt-1">Click <span class="font-semibold">"Add Folder"</span> to create one.</p>
-
-        <!-- ✅ EMPTY STATE ADD BUTTON -->
-        <a href="{% url 'folder_create' %}"
-           class="inline-flex items-center gap-2 mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg shadow transition">
-            <i class="fas fa-plus"></i>
-            Add Folder
-        </a>
-    </div>
-
-    {% endif %}
-
 </div>
 
 {% endblock %}

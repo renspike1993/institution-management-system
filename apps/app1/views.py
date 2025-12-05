@@ -358,8 +358,23 @@ def student_delete(request, pk):
 # --------------------- Folders -----------------------------------
 @login_required
 def folder_list(request):
+    search_query = request.GET.get('search', '')
+
+    # Filter folders by search query
     folders = Folder.objects.all().order_by('-created_at')
-    return render(request, 'app1/folder/folder_list.html', {'folders': folders})
+    if search_query:
+        folders = folders.filter(Q(name__icontains=search_query))
+
+    # Pagination
+    page_number = request.GET.get('page', 1)
+    paginator = Paginator(folders, 10)  # 10 folders per page
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+    }
+    return render(request, 'app1/folder/folder_list.html', context)
 
 @login_required
 def folder_create(request):
@@ -402,45 +417,32 @@ def folder_delete(request, pk):
 from .forms import UserForm
 from django.db.models import Q
 from django.core.paginator import Paginator
+from django.core.paginator import Paginator
 
 @login_required
 def user_list(request):
     search_query = request.GET.get("search", "")
 
-    user_list = User.objects.all()
+    users = User.objects.all().order_by("username")
 
-    # ✅ SEARCH FILTER
     if search_query:
-        user_list = user_list.filter(
+        users = users.filter(
             Q(username__icontains=search_query) |
             Q(first_name__icontains=search_query) |
             Q(last_name__icontains=search_query) |
             Q(email__icontains=search_query)
         )
 
-    user_list = user_list.order_by("id")
-
-    # ✅ PAGINATION
-    paginator = Paginator(user_list, 15)  # 10 per page
+    paginator = Paginator(users, 10)  # show 10 users per page
     page_number = request.GET.get("page")
-    users = paginator.get_page(page_number)
+    page_obj = paginator.get_page(page_number)
 
     return render(request, "app1/users/user_list.html", {
-        "users": users,
-        "search_query": search_query
+        "users": page_obj,    # important
+        "page_obj": page_obj, # for pagination controls
+        "search_query": search_query,
     })
 
-def user_detail(request, pk):
-    user_obj = get_object_or_404(User, pk=pk)
-
-    profile = Profile.objects.filter(user=user_obj).first()  # ✅ Safe fetch
-    transactions = user_obj.transaction_set.all()  # adjust if your related_name is different
-
-    return render(request, "app1/users/user_detail.html", {
-        "user_obj": user_obj,
-        "profile": profile,
-        "transactions": transactions
-    })
     
     
 @login_required

@@ -1,645 +1,914 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>RFID Scanner Dashboard</title>
-		<script src="https://cdn.tailwindcss.com"></script>
-		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-		<style>
-			@keyframes fadeInUp {
-				from {
-					opacity: 0;
-					transform: translateY(20px);
-				}
-
-				to {
-					opacity: 1;
-					transform: translateY(0);
-				}
-			}
-
-			@keyframes pulse {
-				0%,
-				100% {
-					opacity: 1;
-				}
-
-				50% {
-					opacity: 0.5;
-				}
-			}
-
-			.fade-in {
-				animation: fadeInUp 0.3s ease-out;
-			}
-
-			.scanning-pulse {
-				animation: pulse 1s infinite;
-			}
-
-			/* Keep scanner input invisible */
-			#scannerInput {
-				opacity: 0;
-				position: absolute;
-				left: -1000px;
-				top: -1000px;
-			}
-
-			/* Custom styles for the image container */
-			.card-image-container {
-				width: 25%;
-				min-height: 180px;
-				background-size: cover;
-				background-position: center;
-				background-repeat: no-repeat;
-			}
-
-			.card-content-container {
-				width: 75%;
-			}
-
-			/* Fallback image placeholder */
-			.image-placeholder {
-				background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-				color: white;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				font-size: 2rem;
-				font-weight: bold;
-			}
-
-			@media (max-width: 768px) {
-				.card-image-container {
-					width: 30%;
-					min-height: 160px;
-				}
-
-				.card-content-container {
-					width: 70%;
-				}
-			}
-
-			@media (max-width: 640px) {
-				.card-image-container {
-					width: 35%;
-				}
-
-				.card-content-container {
-					width: 65%;
-				}
-			}
-		</style>
-	</head>
-
-	<body class="bg-gray-50 min-h-screen font-sans">
-		<!-- Header -->
-		<header class="bg-gradient-to-br from-blue-900 to-blue-800 text-white sticky top-0 z-50 shadow-lg">
-			<div class="container mx-auto px-4 py-3">
-				{% if request.user.is_superuser %}
-				<a href="{% url 'dashboard' %}" class="absolute left-4 top-4 text-blue-200 hover:text-white transition-colors text-sm font-medium"> ← Back to Administrator </a>
-				{% endif %}
-
-				<div class="flex flex-col md:flex-row md:items-center md:justify-between max-w-4xl mx-auto">
-					<h1 class="text-xl font-semibold text-center md:text-left mb-2 md:mb-0">Attendance [IN]</h1>
-
-					<div class="flex justify-center space-x-6">
-						<div class="text-center">
-							<div id="totalScans" class="text-2xl font-bold">0</div>
-							<div class="text-blue-200 text-sm">Total Scans</div>
-						</div>
-						<div class="text-center">
-							<div id="todayScans" class="text-2xl font-bold">0</div>
-							<div class="text-blue-200 text-sm">Today</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</header>
-
-		<!-- Main Content -->
-		<main class="container mx-auto px-4 py-6 max-w-4xl">
-			<div id="scanList">
-				<!-- Empty State -->
-				<div class="empty-state text-center py-16 px-4">
-					<div class="text-6xl mb-4 text-gray-300">📦</div>
-					<div class="text-xl text-gray-600 font-medium mb-2">No scans yet</div>
-					<div class="text-gray-500">Start scanning RFID tags to see them here</div>
-				</div>
-			</div>
-		</main>
-
-		<!-- Scanner Status -->
-		<div class="fixed bottom-6 right-6 bg-white rounded-full shadow-lg px-4 py-2 flex items-center space-x-2 z-40">
-			<div id="statusIndicator" class="w-3 h-3 rounded-full bg-green-500"></div>
-			<span id="statusText" class="text-sm font-medium text-gray-700">Ready to scan</span>
-		</div>
-
-		<!-- Hidden Scanner Input -->
-		<input type="text" id="scannerInput" placeholder="Scan your RFID..." autofocus class="opacity-0 absolute -left-full -top-full" />
-
-		<script>
-			// Element references
-			const input = document.getElementById("scannerInput");
-			const scanList = document.getElementById("scanList");
-			const totalScansElement = document.getElementById("totalScans");
-			const todayScansElement = document.getElementById("todayScans");
-			const statusIndicator = document.getElementById("statusIndicator");
-			const statusText = document.getElementById("statusText");
-
-			// State variables
-			let totalScans = 0;
-			let todayScans = 0;
-			let scanHistory = [];
-			let scanTimeout = null;
-			let currentScan = "";
-
-			// Scanner configuration
-			const SCANNER_DELAY = 100;
-			const MIN_SCAN_LENGTH = 3;
-
-			// Sample images for demonstration - replace with your actual image URLs
-			const sampleImages = ["https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80", "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w-300&q=80", "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80", "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80", "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80"];
-
-			// Function to get image based on RFID value
-			function getImageForRFID(value) {
-				const hash = hashCode(value);
-				const imageIndex = hash % sampleImages.length;
-				return sampleImages[imageIndex];
-			}
-
-			// Focus management
-			input.addEventListener("blur", () => {
-				setTimeout(() => input.focus(), 10);
-			});
-
-			// Scanner input handling
-			input.addEventListener("input", (e) => {
-				currentScan = input.value;
-				updateScannerStatus("scanning", "Scanning...");
-
-				if (scanTimeout) {
-					clearTimeout(scanTimeout);
-				}
-
-				scanTimeout = setTimeout(() => {
-					processScan(currentScan);
-					input.value = "";
-					currentScan = "";
-				}, SCANNER_DELAY);
-			});
-
-			// Enter key fallback
-			input.addEventListener("keydown", (e) => {
-				if (e.key === "Enter" && input.value.trim() !== "") {
-					if (scanTimeout) {
-						clearTimeout(scanTimeout);
-					}
-					processScan(input.value.trim());
-					input.value = "";
-					currentScan = "";
-				}
-			});
-
-			// Audio functions
-			function alertBeep() {
-				const ctx = new (window.AudioContext || window.webkitAudioContext)();
-
-				function beep(freq, duration, delay = 0) {
-					setTimeout(() => {
-						const osc = ctx.createOscillator();
-						const gain = ctx.createGain();
-
-						osc.type = "sawtooth";
-						osc.frequency.value = freq;
-						gain.gain.value = 0.7;
-
-						osc.connect(gain);
-						gain.connect(ctx.destination);
-
-						osc.start();
-						setTimeout(() => osc.stop(), duration);
-					}, delay);
-				}
-
-				beep(1200, 200, 0);
-				beep(1200, 200, 300);
-				beep(1200, 400, 600);
-			}
-
-			function successBeep() {
-				const ctx = new (window.AudioContext || window.webkitAudioContext)();
-
-				function tone(freq, duration, delay = 0) {
-					setTimeout(() => {
-						const osc = ctx.createOscillator();
-						const gain = ctx.createGain();
-
-						osc.type = "sine";
-						osc.frequency.value = freq;
-						gain.gain.value = 0.4;
-
-						osc.connect(gain);
-						gain.connect(ctx.destination);
-
-						osc.start();
-						setTimeout(() => osc.stop(), duration);
-					}, delay);
-				}
-
-				tone(800, 120, 0);
-				tone(1200, 150, 180);
-			}
-
-			function speak(text) {
-				speechSynthesis.cancel();
-				const speech = new SpeechSynthesisUtterance(text);
-				speech.lang = "en-US";
-				speech.rate = 1;
-				speech.pitch = 1;
-				speech.volume = 1;
-				speechSynthesis.speak(speech);
-			}
-
-			// Scan processing
-			function shouldTriggerUnauthorized(scanValue) {
-				const scans = JSON.parse(localStorage.getItem("scanHistory")) || {};
-				const now = Date.now();
-
-				if (scans[scanValue]) {
-					const lastTime = scans[scanValue];
-					const diff = (now - lastTime) / 1000;
-
-					if (diff >= 5) {
-						scans[scanValue] = now;
-						localStorage.setItem("scanHistory", JSON.stringify(scans));
-						return true;
-					} else {
-						return false;
-					}
-				}
-
-				scans[scanValue] = now;
-				localStorage.setItem("scanHistory", JSON.stringify(scans));
-				return false;
-			}
-
-			function processScan(value) {
-				if (value.length < MIN_SCAN_LENGTH) {
-					showStatus("error", "Invalid scan (too short)");
-					return;
-				}
-
-				showStatus("scanning", "Checking book...");
-
-				fetch(`/library/api/check-book/${value}/`)
-					.then((response) => response.json())
-					.then((data) => {
-
-						var is_book = data.identity_type == "book";
-						var is_user = data.identity_type == "user";
-						var can_be_check_out = data.can_be_check_out;
-
-						if (is_user && shouldTriggerUnauthorized(value)) {
-							addScanItem({
-								id: Date.now(),
-								value: value,
-								title: "✅ " + data.book_title,
-								status: "success",
-								extra: "",
-								timestamp: new Date(),
-								time: new Date().toLocaleTimeString(),
-								date: new Date().toLocaleDateString(),
-								image: data.profile_pic || getImageForRFID(value),
-								book_title: data.book_title,
-								borrower: null,
-								date_borrowed: null,
-							});
-							successBeep();
-							showAlert("success", "User Recognized", `Welcome, <strong>${data.book_title}</strong>!`);
-							return;
-						}
-
-						if (is_book && shouldTriggerUnauthorized(value)) {
-							if (can_be_check_out) {
-								addScanItem({
-									id: Date.now(),
-									value: "✅ " + value,
-									title: "✅ " + data.book_title,
-									status: "✅ Borrowed",
-									extra: `Borrower: ${data.borrower}<br>Date: ${data.date_borrowed}`,
-									timestamp: new Date(),
-									time: new Date().toLocaleTimeString(),
-									date: new Date().toLocaleDateString(),
-									image: data.profile_pic || getImageForRFID(value),
-									book_title: data.book_title,
-									borrower: data.borrower,
-									date_borrowed: data.date_borrowed,
-								});
-								successBeep();
-								showAlert("success", "Book Validated", `The book <strong>${data.book_title}</strong> is checked out to <strong>${data.borrower}</strong>.`);
-								// alert("it is a book and can be checked out!");
-								return;
-							} else {
-								alertBeep();
-								showAlert("error", "Don't do it", `The book <strong>${data.book_title}</strong> is not ready to check out!`);
-								return;
-							}
-						}
-
-						if (shouldTriggerUnauthorized(value)) {
-							showAlert("warning", "Not Found", `No record match the scanned data.`);
-						}
-
-						setTimeout(() => showStatus("ready", "Ready to scan"), 1500);
-					})
-					.catch(() => {
-						showStatus("error", "Server error");
-						setTimeout(() => showStatus("ready", "Ready to scan"), 1500);
-					});
-
-				input.value = "";
-			}
-
-			// Alert and status helpers
-			function showAlert(icon, title, html) {
-				Swal.fire({
-					icon: icon,
-					title: title,
-					html: html,
-					showConfirmButton: false,
-					timer: 2000,
-					timerProgressBar: true,
-					allowOutsideClick: false,
-				});
-			}
-
-			function showStatus(status, text) {
-				statusIndicator.className = "w-3 h-3 rounded-full";
-				statusText.textContent = text;
-
-				switch (status) {
-					case "ready":
-						statusIndicator.classList.add("bg-green-500");
-						break;
-					case "scanning":
-						statusIndicator.classList.add("bg-orange-500", "scanning-pulse");
-						break;
-					case "success":
-						statusIndicator.classList.add("bg-green-500");
-						break;
-					case "error":
-						statusIndicator.classList.add("bg-red-500");
-						break;
-				}
-			}
-
-			function updateScannerStatus(status, text) {
-				statusIndicator.className = "w-3 h-3 rounded-full";
-				statusText.textContent = text;
-
-				switch (status) {
-					case "ready":
-						statusIndicator.classList.add("bg-green-500");
-						break;
-					case "scanning":
-						statusIndicator.classList.add("bg-orange-500", "scanning-pulse");
-						break;
-					case "success":
-						statusIndicator.classList.add("bg-green-500");
-						break;
-					case "error":
-						statusIndicator.classList.add("bg-red-500");
-						break;
-				}
-			}
-
-			// Update statistics
-			function updateStats() {
-				totalScansElement.textContent = totalScans;
-				todayScansElement.textContent = todayScans;
-			}
-
-			// Add scan item to list
-			function addScanItem(scan) {
-				// Remove empty state if present
-				const emptyState = scanList.querySelector(".empty-state");
-				if (emptyState) {
-					emptyState.remove();
-				}
-
-				// Generate color based on RFID value
-				const colorIndex = hashCode(scan.value) % 5;
-				const colors = ["bg-blue-100", "bg-green-100", "bg-red-100", "bg-orange-100", "bg-purple-100"];
-				const textColors = ["text-blue-800", "text-green-800", "text-red-800", "text-orange-800", "text-purple-800"];
-				const borderColors = ["border-blue-200", "border-green-200", "border-red-200", "border-orange-200", "border-purple-200"];
-
-				const card = document.createElement("div");
-				card.classList.add("fade-in", "bg-white", "rounded-xl", "shadow-md", "border", borderColors[colorIndex], "mb-4", "overflow-hidden", "transition-transform", "duration-200", "hover:shadow-lg", "flex");
-
-				// Determine if we should show image placeholder or actual image
-				const hasImage = scan.image && scan.image.trim() !== "";
-				const imageStyle = hasImage ? `background-image: url('${scan.image}')` : "";
-
-				card.innerHTML = `
-                <!-- Image Section - 1/4 width -->
-                <div class="card-image-container ${!hasImage ? "image-placeholder" : ""}" style="${imageStyle}">
-                    ${!hasImage ? `<div class="text-center p-4">${scan.value.charAt(0)}</div>` : ""}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RFID Scanner Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+
+            100% {
+                background-position: 1000px 0;
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.3s ease-out;
+        }
+
+        .scanning-pulse {
+            animation: pulse 1s infinite;
+        }
+
+        .shimmer {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 1000px 100%;
+            animation: shimmer 2s infinite;
+        }
+
+        /* Scanner input styling */
+        #scannerInput {
+            opacity: 0;
+            position: absolute;
+            left: -1000px;
+            top: -1000px;
+        }
+
+        /* Elegant card hover effects */
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Gradient backgrounds */
+        .gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .gradient-success {
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+        }
+
+        .gradient-error {
+            background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+        }
+
+        /* Elegant status indicators */
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .status-dot::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 50%;
+            border: 2px solid;
+            opacity: 0.3;
+        }
+
+        /* Elegant image container */
+        .avatar-container {
+            width: 120px;
+            height: 120px;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .avatar-placeholder {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen font-sans antialiased">
+    <!-- Header -->
+    <header class="gradient-primary text-white sticky top-0 z-50 shadow-xl">
+        <div class="container mx-auto px-4 py-4">
+            {% if request.user.is_superuser %}
+            <a href="{% url 'dashboard' %}"
+                class="absolute left-6 top-6 text-white/80 hover:text-white transition-all duration-300 text-sm font-medium bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full hover:bg-white/20">
+                ← Back to Administrator
+            </a>
+            {% endif %}
+
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between max-w-6xl mx-auto pt-2">
+                <div class="text-center md:text-left mb-4 md:mb-0">
+                    <div class="flex items-center justify-center md:justify-start space-x-3">
+                        <div class="bg-white/20 p-2 rounded-xl">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-bold tracking-tight">RFID Scanner Dashboard</h1>
+                            <p class="text-white/80 text-sm font-light">Attendance [IN] • Real-time monitoring</p>
+                        </div>
+                    </div>
                 </div>
-                
-                <!-- Content Section - 3/4 width -->
-                <div class="card-content-container p-4">
-                    <div class="flex flex-col h-full">
-                        <!-- Header with title and status -->
-                        <div class="flex justify-between items-start mb-3">
-                            <div>
-                                <h3 class="font-semibold text-gray-800 text-lg">${scan.book_title || "RFID Scan"}</h3>
-                                <p class="text-sm text-gray-500">${scan.date} at ${scan.time}</p>
+
+                <div class="flex justify-center space-x-8">
+                    <div class="text-center bg-white/10 backdrop-blur-sm px-6 py-3 rounded-2xl min-w-[120px]">
+                        <div id="totalScans" class="text-3xl font-bold tracking-tight">0</div>
+                        <div class="text-white/70 text-sm font-medium uppercase tracking-wider">Total Scans</div>
+                    </div>
+                    <div class="text-center bg-white/10 backdrop-blur-sm px-6 py-3 rounded-2xl min-w-[120px]">
+                        <div id="todayScans" class="text-3xl font-bold tracking-tight">0</div>
+                        <div class="text-white/70 text-sm font-medium uppercase tracking-wider">Today</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100" style="display: none;">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium uppercase tracking-wider">Scanner Status</p>
+                        <div class="flex items-center mt-2">
+                            <div id="statusIndicator" class="status-dot bg-green-500 mr-3"></div>
+                            <span id="statusText" class="text-lg font-semibold text-gray-800">Ready to scan</span>
+                        </div>
+                    </div>
+                    <div class="text-green-500">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100" style="display: none;">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium uppercase tracking-wider" style="display: none;">
+                            Active Sessions</p>
+                        <p class="text-2xl font-bold text-gray-800 mt-2" id="activeSessions">0</p>
+                    </div>
+                    <div class="text-blue-500">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100" style="display: none;">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium uppercase tracking-wider">Last Scan</p>
+                        <p class="text-2xl font-bold text-gray-800 mt-2" id="lastScanTime">--:--:--</p>
+                    </div>
+                    <div class="text-purple-500">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scan History Section -->
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+            <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800">Scan History</h2>
+                        <p class="text-gray-500 text-sm">Recent RFID scans and validations</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button id="clearAll"
+                            class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-all duration-200">
+                            Clear All
+                        </button>
+                        <div class="relative">
+                            <input type="text" placeholder="Search scans..."
+                                class="pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm w-64">
+                            <svg class="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="scanList" class="p-6">
+                {% if logs %}
+                <ul class="space-y-4">
+                    {% for log in logs %}
+                    <li
+                        class="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-xl p-4 shadow-sm">
+                        <div class="flex items-center space-x-4">
+
+                            <!-- Snapshot -->
+                            {% if log.snapshot %}
+                            <img src="{{ log.snapshot.url }}" class="w-16 h-16 rounded-lg object-cover">
+                            {% else %}
+                            <div
+                                class="w-16 h-16 flex items-center justify-center bg-gray-200 rounded-lg text-gray-500">
+                                No Image
                             </div>
-                            <span class="px-3 py-1 text-xs font-medium rounded-full ${scan.status.includes("✅") ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}">
-                                ${scan.status}
-                            </span>
+                            {% endif %}
+
+                            <!-- Details -->
+                            <div>
+                                <p class="text-lg font-bold text-gray-800">{{ log.full_name }}</p>
+                                <p class="text-sm text-gray-600">
+                                    Gate: {{ log.gate_name }} • {{ log.direction }}
+                                </p>
+                                <p class="text-sm text-gray-500">
+                                    {{ log.timestamp|date:"Y-m-d H:i:s" }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Status -->
+                        <span class="text-sm font-semibold px-3 py-1 rounded-lg
+                        {% if log.status == 'AUTHORIZED' %}
+                            bg-green-100 text-green-700
+                        {% else %}
+                            bg-red-100 text-red-700
+                        {% endif %}
+                    ">
+                            {{ log.status }}
+                        </span>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                {% else %}
+
+                <!-- Empty State -->
+                <div class="empty-state text-center py-16 px-4">
+                    <div
+                        class="w-24 h-24 bg-gradient-to-br from-blue-50 to-purple-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-2">No scans yet</h3>
+                    <p class="text-gray-500 mb-6">Start scanning RFID tags to see them appear here</p>
+                </div>
+
+                {% endif %}
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Scanner Status Panel (Fixed Bottom) -->
+    <div
+        class="fixed bottom-8 right-8 bg-gradient-to-r from-gray-900 to-gray-800 text-white rounded-2xl shadow-2xl px-6 py-4 flex items-center space-x-4 z-40 backdrop-blur-sm border border-white/10">
+        <div class="relative">
+            <div id="statusIndicatorPanel" class="status-dot bg-green-500"></div>
+        </div>
+        <div class="flex-1">
+            <p class="text-sm font-medium text-white/90">Scanner Status</p>
+            <p id="statusTextPanel" class="text-lg font-semibold">Ready to scan</p>
+        </div>
+        <div class="px-4 py-2 bg-white/10 rounded-lg text-sm font-medium">
+            <span id="currentTime" class="font-mono">00:00:00</span>
+        </div>
+    </div>
+
+    <!-- Hidden Scanner Input -->
+    <input type="text" id="scannerInput" placeholder="Scan your RFID..." autofocus
+        class="opacity-0 absolute -left-full -top-full">
+
+    <script>
+
+   
+
+        // Element references
+        const input = document.getElementById("scannerInput");
+        const scanList = document.getElementById("scanList");
+        const totalScansElement = document.getElementById("totalScans");
+        const todayScansElement = document.getElementById("todayScans");
+        const statusIndicator = document.getElementById("statusIndicator");
+        const statusText = document.getElementById("statusText");
+        const statusIndicatorPanel = document.getElementById("statusIndicatorPanel");
+        const statusTextPanel = document.getElementById("statusTextPanel");
+        const currentTime = document.getElementById("currentTime");
+        const lastScanTime = document.getElementById("lastScanTime");
+        const activeSessions = document.getElementById("activeSessions");
+        const clearAllBtn = document.getElementById("clearAll");
+
+        // State variables
+        let totalScans = 0;
+        let todayScans = 0;
+        let activeSessionCount = 0;
+        let scanHistory = [];
+        let scanTimeout = null;
+        let currentScan = "";
+
+        // Scanner configuration
+        const SCANNER_DELAY = 100;
+        const MIN_SCAN_LENGTH = 3;
+
+        // Update time display
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { hour12: false });
+            currentTime.textContent = timeString;
+            lastScanTime.textContent = timeString;
+        }
+
+        // Update scanner status
+        function updateScannerStatus(status, text) {
+            const statusIndicators = [statusIndicator, statusIndicatorPanel];
+            const statusTexts = [statusText, statusTextPanel];
+
+            statusIndicators.forEach(indicator => {
+                indicator.className = indicator.className.replace(/bg-\w+-\d+ status-dot/, 'status-dot');
+                indicator.classList.remove('scanning-pulse');
+            });
+
+            switch (status) {
+                case "ready":
+                    statusIndicators.forEach(indicator => indicator.classList.add("bg-green-500"));
+                    statusTexts.forEach(textElement => textElement.textContent = text);
+                    break;
+                case "scanning":
+                    statusIndicators.forEach(indicator => {
+                        indicator.classList.add("bg-orange-500", "scanning-pulse");
+                    });
+                    statusTexts.forEach(textElement => textElement.textContent = text);
+                    break;
+                case "success":
+                    statusIndicators.forEach(indicator => indicator.classList.add("bg-green-500"));
+                    statusTexts.forEach(textElement => textElement.textContent = text);
+                    break;
+                case "error":
+                    statusIndicators.forEach(indicator => indicator.classList.add("bg-red-500"));
+                    statusTexts.forEach(textElement => textElement.textContent = text);
+                    break;
+            }
+        }
+
+        // Focus management
+        input.addEventListener("blur", () => {
+            setTimeout(() => input.focus(), 10);
+        });
+
+        // Scanner input handling
+        input.addEventListener("input", (e) => {
+            currentScan = input.value;
+            updateScannerStatus("scanning", "Scanning...");
+
+            if (scanTimeout) {
+                clearTimeout(scanTimeout);
+            }
+
+            scanTimeout = setTimeout(() => {
+                processScan(currentScan);
+                input.value = "";
+                currentScan = "";
+            }, SCANNER_DELAY);
+        });
+
+        // Enter key fallback
+        input.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" && input.value.trim() !== "") {
+                if (scanTimeout) {
+                    clearTimeout(scanTimeout);
+                }
+                processScan(input.value.trim());
+                input.value = "";
+                currentScan = "";
+            }
+        });
+
+        // Audio functions
+        function alertBeep() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = ctx.createOscillator();
+                const gainNode = ctx.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(ctx.destination);
+
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                gainNode.gain.value = 0.1;
+
+                oscillator.start();
+                gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+                oscillator.stop(ctx.currentTime + 0.5);
+            } catch (e) {
+                console.log("Audio not supported");
+            }
+        }
+
+        function successBeep() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+                function playNote(frequency, duration, delay) {
+                    setTimeout(() => {
+                        const oscillator = ctx.createOscillator();
+                        const gainNode = ctx.createGain();
+
+                        oscillator.connect(gainNode);
+                        gainNode.connect(ctx.destination);
+
+                        oscillator.frequency.value = frequency;
+                        oscillator.type = 'sine';
+                        gainNode.gain.value = 0.1;
+
+                        oscillator.start();
+                        gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+                        oscillator.stop(ctx.currentTime + duration);
+                    }, delay);
+                }
+
+                playNote(523.25, 0.1, 0); // C
+                playNote(659.25, 0.2, 100); // E
+                playNote(783.99, 0.3, 200); // G
+            } catch (e) {
+                console.log("Audio not supported");
+            }
+        }
+
+        // Scan processing
+        function shouldTriggerUnauthorized(scanValue) {
+            const scans = JSON.parse(localStorage.getItem("scanHistory")) || {};
+            const now = Date.now();
+
+            if (scans[scanValue]) {
+                const lastTime = scans[scanValue];
+                const diff = (now - lastTime) / 1000;
+
+                if (diff >= 3) {
+                    scans[scanValue] = now;
+                    localStorage.setItem("scanHistory", JSON.stringify(scans));
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            scans[scanValue] = now;
+            localStorage.setItem("scanHistory", JSON.stringify(scans));
+            return false;
+        }
+
+        function processScan(value) {
+            if (value.length < MIN_SCAN_LENGTH) {
+                updateScannerStatus("error", "Invalid scan (too short)");
+                return;
+            }
+
+            updateScannerStatus("scanning", "Checking book...");
+            updateTime();
+
+            fetch(`/library/api/check-book/${value}/`)
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.can_be_check_out) {
+                        successBeep();
+                        Swal.fire({
+                            title: "Ready for Checkout",
+                            text: "This item can be checked out",
+                            icon: "success",
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        return;
+                    }
+
+                    if (data.identity_type === 'user') {
+                        if (shouldTriggerUnauthorized(value)) {
+                            activeSessionCount++;
+                            activeSessions.textContent = activeSessionCount;
+
+                            addScanItem({
+                                id: Date.now(),
+                                value: value,
+                                title: data.book_title || "User Login",
+                                status: "Student",
+                                extra: `User successfully logged in`,
+                                timestamp: new Date(),
+                                time: new Date().toLocaleTimeString(),
+                                date: new Date().toLocaleDateString(),
+                                image: data.profile_pic,
+                                book_title: data.book_title,
+                                borrower: data.borrower,
+                                date_borrowed: data.date_borrowed,
+                                profile_pic: data.profile_pic,
+                            });
+
+                            Swal.fire({
+                                title: "Welcome!",
+                                html: `<div class="text-center">
+                                    <div class="w-16 h-16 bg-gradient-to-br from-green-100 to-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </div>
+                                    <h3 class="text-xl font-semibold text-gray-800">Student Login Successful</h3>
+                                    <p class="text-gray-600 mt-2">Welcome ${data.book_title || "User"}!</p>
+                                </div>`,
+                                icon: "success",
+                                timer: 3000,
+                                showConfirmButton: false
+                            });
+
+                            successBeep();
+                            updateScannerStatus("success", "Student logged in");
+                        }
+                        return;
+                    }
+
+                    if (data.identity_type === 'book') {
+                        const canCheckout = data.can_be_check_out;
+
+                        if (shouldTriggerUnauthorized(value)) {
+                            addScanItem({
+                                id: Date.now(),
+                                value: value,
+                                title: data.book_title || "Book Scan",
+                                status: canCheckout ? "Available" : "Borrowed",
+                                extra: canCheckout
+                                    ? "This book is available for checkout"
+                                    : `Currently borrowed by ${data.borrower || "unknown"} on ${data.date_borrowed || "unknown date"}`,
+                                timestamp: new Date(),
+                                time: new Date().toLocaleTimeString(),
+                                date: new Date().toLocaleDateString(),
+                                image: data.profile_pic,
+                                book_title: data.book_title,
+                                borrower: data.borrower,
+                                date_borrowed: data.date_borrowed,
+                                profile_pic: data.profile_pic,
+                            });
+
+                            if (canCheckout) {
+                                successBeep();
+                                Swal.fire({
+                                    title: "Book Available",
+                                    html: `<div class="text-center">
+                                        <div class="w-16 h-16 bg-gradient-to-br from-green-100 to-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                            </svg>
+                                        </div>
+                                        <h3 class="text-xl font-semibold text-gray-800">Book Available</h3>
+                                        <p class="text-gray-600 mt-2">${data.book_title} can be checked out</p>
+                                    </div>`,
+                                    icon: "success",
+                                    timer: 3000,
+                                    showConfirmButton: false
+                                });
+                                updateScannerStatus("success", "Book available");
+                            } else {
+                                alertBeep();
+                                Swal.fire({
+                                    title: "Book Unavailable",
+                                    html: `<div class="text-center">
+                                        <div class="w-16 h-16 bg-gradient-to-br from-red-100 to-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </div>
+                                        <h3 class="text-xl font-semibold text-gray-800">Cannot Check Out</h3>
+                                        <p class="text-gray-600 mt-2">${data.book_title} is currently borrowed</p>
+                                    </div>`,
+                                    icon: "error",
+                                    timer: 3000,
+                                    showConfirmButton: false
+                                });
+                                updateScannerStatus("error", "Book borrowed");
+                            }
+                        }
+                        return;
+                    }
+
+                    // Handle other cases
+                    if (shouldTriggerUnauthorized(value)) {
+                        Swal.fire({
+                            title: "Not Found",
+                            text: "No matching record found for this scan",
+                            icon: "warning",
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        updateScannerStatus("warning", "No record found");
+                    }
+
+                    setTimeout(() => updateScannerStatus("ready", "Ready to scan"), 1500);
+                })
+                .catch((error) => {
+                    console.error("Scan error:", error);
+                    Swal.fire({
+                        title: "Server Error",
+                        text: "Unable to process scan request",
+                        icon: "error",
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    updateScannerStatus("error", "Server error");
+                    setTimeout(() => updateScannerStatus("ready", "Ready to scan"), 1500);
+                });
+
+            input.value = "";
+        }
+
+        // Add scan item to list
+        function addScanItem(scan) {
+            // Remove empty state if present
+            const emptyState = scanList.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+
+            // Determine card style based on status
+            let cardStyle = "";
+            let statusStyle = "";
+            let statusIcon = "";
+
+            if (scan.status === "Student" || scan.status === "Available") {
+                cardStyle = "border-l-4 border-l-green-500";
+                statusStyle = "bg-green-100 text-green-800";
+                statusIcon = "✅";
+            } else if (scan.status === "Book" || scan.status === "Borrowed") {
+                cardStyle = "border-l-4 border-l-orange-500";
+                statusStyle = "bg-orange-100 text-orange-800";
+                statusIcon = "📕";
+            } else {
+                cardStyle = "border-l-4 border-l-blue-500";
+                statusStyle = "bg-blue-100 text-blue-800";
+                statusIcon = "🔍";
+            }
+
+            const card = document.createElement("div");
+            card.className = `fade-in card-hover bg-white rounded-xl shadow-lg mb-4 overflow-hidden transition-all duration-300 hover:shadow-xl ${cardStyle}`;
+
+            // Format time difference
+            const timeDiff = getTimeAgo(scan.timestamp);
+
+            card.innerHTML = `
+                <div class="p-6">
+                    <div class="flex items-start space-x-4">
+                        <!-- Avatar/Image Section -->
+                        <div class="avatar-container flex-shrink-0">
+                            ${scan.image ?
+                    `<img src="${scan.image}" alt="${scan.title}" class="w-full h-full object-cover">` :
+                    `<div class="avatar-placeholder">${scan.value.charAt(0).toUpperCase()}</div>`
+                }
                         </div>
                         
-                        <!-- RFID Details -->
-                        <div class="mb-4 flex-1">
-                            <div class="mb-3">
-                                <p class="text-sm font-medium text-gray-700 mb-1">Scanned RFID:</p>
-                                <p class="font-mono bg-gray-50 px-3 py-2 rounded-lg border border-gray-200 text-gray-800 break-all">
-                                    ${scan.value}
-                                </p>
+                        <!-- Content Section -->
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-start justify-between mb-4">
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-800 truncate">${scan.title}</h3>
+                                    <div class="flex items-center space-x-3 mt-1">
+                                        <span class="text-sm text-gray-500">
+                                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                            ${scan.date}
+                                        </span>
+                                        <span class="text-sm text-gray-500">
+                                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            ${scan.time}
+                                        </span>
+                                    </div>
+                                </div>
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold ${statusStyle}">
+                                    ${statusIcon} ${scan.status}
+                                </span>
+                            </div>
+                            
+                            <!-- RFID Value -->
+                            <div class="mb-4">
+                                <p class="text-sm font-medium text-gray-700 mb-2">RFID Tag:</p>
+                                <div class="bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">
+                                    <code class="font-mono text-gray-800 break-all">${scan.value}</code>
+                                </div>
                             </div>
                             
                             <!-- Additional Information -->
-                            <div class="space-y-2">
-                                ${
-																	scan.borrower
-																		? `
-                                    <div class="flex items-center text-sm">
-                                        <span class="font-medium text-gray-700 mr-2">Borrower:</span>
-                                        <span class="text-gray-600">${scan.borrower}</span>
-                                    </div>
-                                `
-																		: ""
-																}
-                                
-                                ${
-																	scan.date_borrowed
-																		? `
-                                    <div class="flex items-center text-sm">
-                                        <span class="font-medium text-gray-700 mr-2">Borrow Date:</span>
-                                        <span class="text-gray-600">${scan.date_borrowed}</span>
-                                    </div>
-                                `
-																		: ""
-																}
-                                
-                                ${
-																	scan.extra
-																		? `
-                                    <div class="text-sm text-gray-600 mt-2 p-2 bg-gray-50 rounded-lg">
+                            ${scan.extra ? `
+                                <div class="mb-4">
+                                    <p class="text-sm font-medium text-gray-700 mb-2">Details:</p>
+                                    <div class="text-sm text-gray-600 p-3 bg-gray-50 rounded-lg border border-gray-200">
                                         ${scan.extra}
                                     </div>
-                                `
-																		: ""
-																}
-                            </div>
-                        </div>
-                        
-                        <!-- Footer with ID and timestamp -->
-                        <div class="flex justify-between items-center pt-3 border-t border-gray-100 text-sm text-gray-500">
-                            <div class="flex items-center">
-                                <span class="mr-4">ID: ${scan.id}</span>
-                                <span class="text-xs bg-gray-100 px-2 py-1 rounded">${getTimeAgo(scan.timestamp)}</span>
-                            </div>
+                                </div>
+                            ` : ''}
                             
-                            <!-- Action buttons -->
-                            <div class="flex space-x-2">
-                                <button class="action-btn px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                                    <span class="mr-1">✓</span> Validate
-                                </button>
-                                <button class="action-btn px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                                    <span class="mr-1">ℹ️</span> Details
-                                </button>
-                                <button class="delete-btn px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                                    <span class="mr-1">🗑️</span> Delete
-                                </button>
+                            <!-- Footer -->
+                            <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                                <div class="flex items-center space-x-4">
+                                    <span class="text-xs text-gray-500 font-medium">
+                                        ID: ${scan.id.toString().slice(-6)}
+                                    </span>
+                                    <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+                                        ${timeDiff}
+                                    </span>
+                                </div>
+                                
+                                <div class="flex items-center space-x-2">
+                                    <button class="action-btn px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        Validate
+                                    </button>
+                                    <button class="action-btn px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        Details
+                                    </button>
+                                    <button class="delete-btn px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                        Remove
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             `;
 
-				scanList.prepend(card);
-				totalScans++;
-				updateStats();
+            scanList.prepend(card);
+            totalScans++;
+            todayScans++;
+            totalScansElement.textContent = totalScans;
+            todayScansElement.textContent = todayScans;
 
-				// Add delete functionality
-				const deleteBtn = card.querySelector(".delete-btn");
-				deleteBtn.addEventListener("click", () => {
-					card.style.opacity = "0";
-					card.style.transform = "translateX(-100px)";
-					setTimeout(() => {
-						card.remove();
-						totalScans--;
-						updateStats();
+            // Add delete functionality
+            const deleteBtn = card.querySelector(".delete-btn");
+            deleteBtn.addEventListener("click", () => {
+                card.style.opacity = "0";
+                card.style.transform = "translateX(100px)";
+                setTimeout(() => {
+                    card.remove();
+                    totalScans--;
+                    totalScansElement.textContent = totalScans;
 
-						if (scanList.children.length === 0) {
-							showEmptyState();
-						}
-					}, 300);
-				});
-			}
+                    if (scanList.children.length === 0) {
+                        showEmptyState();
+                    }
+                }, 300);
+            });
+        }
 
-			// Show empty state
-			function showEmptyState() {
-				const emptyState = document.createElement("div");
-				emptyState.className = "empty-state text-center py-16 px-4";
-				emptyState.innerHTML = `
-                <div class="text-6xl mb-4 text-gray-300">📦</div>
-                <div class="text-xl text-gray-600 font-medium mb-2">No scans yet</div>
-                <div class="text-gray-500">Start scanning RFID tags to see them here</div>
+        // Helper functions
+        function hashCode(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = (hash << 5) - hash + str.charCodeAt(i);
+                hash |= 0;
+            }
+            return Math.abs(hash);
+        }
+
+        function getTimeAgo(timestamp) {
+            const now = new Date();
+            const diffMs = now - timestamp;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return "Just now";
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            if (diffDays < 7) return `${diffDays}d ago`;
+            return timestamp.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        }
+
+        // Clear all scans
+        clearAllBtn.addEventListener("click", () => {
+            if (scanList.children.length > 0) {
+                Swal.fire({
+                    title: "Clear All Scans?",
+                    text: "This will remove all scan history from the display",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#ef4444",
+                    cancelButtonColor: "#6b7280",
+                    confirmButtonText: "Clear All",
+                    cancelButtonText: "Cancel"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        scanList.innerHTML = "";
+                        totalScans = 0;
+                        todayScans = 0;
+                        totalScansElement.textContent = "0";
+                        todayScansElement.textContent = "0";
+                        showEmptyState();
+                        Swal.fire("Cleared!", "All scans have been removed.", "success");
+                    }
+                });
+            }
+        });
+
+        // Show empty state
+        function showEmptyState() {
+            const emptyState = document.createElement("div");
+            emptyState.className = "empty-state text-center py-16 px-4";
+            emptyState.innerHTML = `
+                <div class="w-24 h-24 bg-gradient-to-br from-blue-50 to-purple-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
+                            d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">No scans yet</h3>
+                <p class="text-gray-500 mb-6">Start scanning RFID tags to see them appear here</p>
+                <div class="flex items-center justify-center space-x-4">
+                    <div class="px-4 py-2 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium">
+                        Press any key to focus
+                    </div>
+                    <div class="px-4 py-2 bg-gray-50 text-gray-600 rounded-lg text-sm font-medium">
+                        Scan delay: 100ms
+                    </div>
+                </div>
             `;
-				scanList.appendChild(emptyState);
-			}
+            scanList.appendChild(emptyState);
+        }
 
-			// Helper functions
-			function hashCode(str) {
-				let hash = 0;
-				for (let i = 0; i < str.length; i++) {
-					hash = (hash << 5) - hash + str.charCodeAt(i);
-					hash |= 0;
-				}
-				return Math.abs(hash);
-			}
+        // Initialize
+        window.addEventListener("load", () => {
+            input.focus();
+            updateTime();
+            setInterval(updateTime, 1000);
 
-			function getTimeAgo(timestamp) {
-				const now = new Date();
-				const diffMs = now - timestamp;
-				const diffMins = Math.floor(diffMs / 60000);
-				const diffHours = Math.floor(diffMs / 3600000);
-				const diffDays = Math.floor(diffMs / 86400000);
+            // Add keyboard shortcut to focus scanner
+            document.addEventListener("keydown", (e) => {
+                if (e.target !== input && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                    input.focus();
+                }
+            });
+        });
+    </script>
+</body>
 
-				if (diffMins < 1) return "Just now";
-				if (diffMins < 60) return `${diffMins}m ago`;
-				if (diffHours < 24) return `${diffHours}h ago`;
-				if (diffDays < 7) return `${diffDays}d ago`;
-				return timestamp.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-			}
-
-			// Initialize
-			window.addEventListener("load", () => {
-				input.focus();
-				// Uncomment for sample data
-				// addSampleData();
-			});
-
-			function addSampleData() {
-				const sampleScans = ["RFID-001-ABC123", "RFID-002-XYZ789", "RFID-003-DEF456", "RFID-004-GHI789", "RFID-005-JKL012"];
-				sampleScans.forEach((scan, index) => {
-					setTimeout(() => {
-						// Simulate a book check response
-						const isBorrowed = index % 2 === 0;
-						const sampleData = {
-							status: isBorrowed ? "borrowed" : "available",
-							book_title: `Sample Book ${index + 1}`,
-							borrower: isBorrowed ? "John Doe" : null,
-							date_borrowed: isBorrowed ? "2024-01-15" : null,
-							image: sampleImages[index % sampleImages.length],
-						};
-
-						// Create a mock fetch response
-						const mockResponse = {
-							json: () => Promise.resolve(sampleData),
-						};
-
-						// Process the scan with mock data
-						showStatus("scanning", "Checking book...");
-						mockResponse.json().then((data) => {
-							if (shouldTriggerUnauthorized(scan)) {
-								const itemData = {
-									id: Date.now() + index,
-									value: isBorrowed ? "✅ " + scan : scan + "📕",
-									title: isBorrowed ? data.book_title : "📕 Unauthorized - " + data.book_title,
-									status: isBorrowed ? "✅ Borrowed" : "📕 Unauthorized",
-									extra: isBorrowed ? `Borrower: ${data.borrower}<br>Date: ${data.date_borrowed}` : "",
-									timestamp: new Date(),
-									time: new Date().toLocaleTimeString(),
-									date: new Date().toLocaleDateString(),
-									image: data.image,
-									book_title: data.book_title,
-									borrower: data.borrower,
-									date_borrowed: data.date_borrowed,
-								};
-
-								addScanItem(itemData);
-								showStatus("ready", "Ready to scan");
-							}
-						});
-					}, index * 500);
-				});
-			}
-		</script>
-	</body>
 </html>

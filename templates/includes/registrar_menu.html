@@ -1,0 +1,76 @@
+<!-- Navigation -->
+
+<div class="px-4 py-5 border-b border-gray-700">
+    <div class="flex items-center space-x-2 lg:space-x-3">
+        <div
+            class="w-8 h-8 rounded-md bg-gradient-to-r from-accent-500 to-purple-600 flex items-center justify-center text-white text-xs shadow-lg">
+            <i class="fa-solid fa-cube"></i>
+        </div>
+
+        {% if perms.app1.can_view_registrar_menu %}
+        <span class="hidden lg:block text-sm tracking-wide font-semibold text-white"> REGISTRAR<span
+                class="text-accent-400"></span> </span>
+        {% endif %}
+
+        {% if perms.app2.can_view_library_menu %}
+        <span class="hidden lg:block text-sm tracking-wide font-semibold text-white"> LIBRARY<span
+                class="text-accent-400"></span> </span>
+        {% endif %}
+
+    </div>
+</div>
+
+<!-- User -->
+<div class="px-4 py-4 border-b border-gray-700 flex items-center space-x-3">
+    <div
+        class="h-8 w-8 rounded-full bg-gradient-to-r from-accent-500 to-purple-600 text-white flex items-center justify-center text-xs shadow-md">
+        {{ request.user.first_name|slice:":1" }}{{ request.user.last_name|slice:":1" }}
+    </div>
+
+    <div class="hidden lg:block">
+        <p class="text-xs font-medium text-white">
+            {{ request.user.get_full_name|default:request.user.username }}
+        </p>
+
+        <p class="text-[11px] text-gray-400">
+            {{ perms.app1.can_view_registrar_menu }}
+        </p>
+    </div>
+</div>
+
+
+<nav class="flex-1 overflow-y-auto slim-scrollbar py-4">
+    <ul class="space-y-1 px-3 text-sm">
+        <li>
+            <a href="{% url 'user_list' %}"
+                class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 {% if request.resolver_match.url_name == 'user_list' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
+                <i class="fa-solid fa-users text-xs w-4"></i>
+                <span class="hidden lg:block ml-3">Users</span>
+            </a>
+        </li>
+
+        <li>
+            <a href="{% url 'department_list' %}"
+                class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 {% if request.resolver_match.url_name == 'department_list' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
+                <i class="fa-solid fa-users text-xs w-4"></i>
+                <span class="hidden lg:block ml-3">Departments</span>
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'folder_list' %}"
+                class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 {% if request.resolver_match.url_name == 'folder_list' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
+                <i class="fa-solid fa-users text-xs w-4"></i>
+                <span class="hidden lg:block ml-3">Folders</span>
+            </a>
+        </li>
+        <li>
+            <a href=""
+                class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 {% if request.resolver_match.url_name == '' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
+                <i class="fa-solid fa-users text-xs w-4"></i>
+                <span class="hidden lg:block ml-3">Defecient Tracker</span>
+            </a>
+        </li>
+
+
+    </ul>
+</nav>

@@ -43,8 +43,161 @@
 		<style>
 			@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap");
 
+<<<<<<< HEAD
 			* {
 				font-family: "Inter", sans-serif;
+=======
+		* {
+			font-family: "Inter", sans-serif;
+		}
+
+		.thin-sidebar {
+			transition: all 0.2s ease;
+		}
+
+		.slim-scrollbar::-webkit-scrollbar {
+			width: 3px;
+		}
+
+		.slim-scrollbar::-webkit-scrollbar-track {
+			background: transparent;
+		}
+
+		.slim-scrollbar::-webkit-scrollbar-thumb {
+			background: #4b5563;
+			border-radius: 2px;
+		}
+
+		.dark-sidebar {
+			background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+		}
+	</style>
+	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet" />
+</head>
+
+<body class="bg-soft-50 text-soft-700">
+	<div class="flex h-screen overflow-hidden">
+		<!-- DARK ELEGANT SIDEBAR -->
+		<aside class="thin-sidebar w-16 lg:w-52 dark-sidebar border-r border-gray-700 flex flex-col">
+			<!-- Logo -->
+
+
+
+
+
+
+
+			<!-- Navigation -->
+			{% if perms.app2.can_view_library_menu %}
+			{% include "includes/library_menu.html" %}
+			{% endif %}
+
+
+			{% if perms.app1.can_view_registrar_menu %}
+			{% include "includes/registrar_menu.html" %}
+			{% endif %}
+
+
+			<!-- Logout -->
+			<div class="border-t border-gray-700 p-3">
+				{% if user.is_authenticated %}
+				<form method="POST" action="{% url 'logout' %}">
+					{% csrf_token %}
+					<button
+						class="flex items-center w-full px-3 py-2 text-sm rounded-lg hover:bg-gray-700 text-gray-300 transition-all duration-200"
+						type="submit">
+						<i class="fa-solid fa-arrow-right-from-bracket text-xs w-4"></i>
+						<span class="hidden lg:block ml-3">Logout</span>
+					</button>
+				</form>
+				{% endif %}
+			</div>
+		</aside>
+
+		<!-- MAIN AREA -->
+		<div class="flex-1 flex flex-col overflow-hidden">
+			<!-- HEADER -->
+			<header class="bg-white border-b border-soft-200 px-4 py-3 flex items-center justify-between">
+				<div class="flex items-center space-x-2">
+					<button id="sidebarToggle" class="p-2 rounded-md hover:bg-soft-100 text-soft-600">
+						<i class="fa-solid fa-bars text-sm"></i>
+					</button>
+
+					<div class="relative">
+						<i class="fa-solid fa-search absolute left-3 top-2 text-soft-400 text-xs"></i>
+						<input type="text" placeholder="Search..."
+							class="pl-9 pr-3 py-1.5 text-sm border border-soft-300 rounded-lg focus:ring-accent-500 focus:border-accent-500 w-48 lg:w-64" />
+					</div>
+				</div>
+
+				<div class="flex items-center space-x-3">
+					<button class="relative p-2 rounded-md hover:bg-soft-100 text-soft-600">
+						<i class="fa-solid fa-bell text-sm"></i>
+						<span
+							class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] h-4 w-4 rounded-full flex items-center justify-center">5</span>
+					</button>
+
+					<button class="p-2 rounded-md hover:bg-soft-100 text-soft-600">
+						<i class="fa-solid fa-gear text-sm"></i>
+					</button>
+
+					<div class="h-8 w-8 rounded-full bg-accent-500 text-white flex items-center justify-center text-xs">
+						JD</div>
+				</div>
+			</header>
+
+			<!-- CONTENT -->
+			<main class="flex-1 overflow-y-auto slim-scrollbar p-5 bg-soft-50">
+				{% block content %}{% endblock %}
+				<!-- Messages Alert -->
+				{% if messages %}
+				<div id="messages-container" class="fixed bottom-4 right-4 z-50 space-y-2">
+					{% for message in messages %}
+					<div
+						class="message px-4 py-2 rounded shadow text-white {% if message.tags == 'success' %} bg-green-600 {% elif message.tags == 'error' %} bg-red-600 {% elif message.tags == 'warning' %} bg-yellow-500 {% else %} bg-blue-600 {% endif %}">
+						{{ message }}</div>
+					{% endfor %}
+				</div>
+
+				<script>
+					// Automatically remove messages after 3 seconds
+					setTimeout(() => {
+						const container = document.getElementById("messages-container");
+						if (container) {
+							container.style.transition = "opacity 0.5s";
+							container.style.opacity = "0";
+							setTimeout(() => container.remove(), 500); // remove after fade out
+						}
+					}, 3000);
+				</script>
+				{% endif %}
+			</main>
+		</div>
+	</div>
+	<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+	<!-- if not already included -->
+	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
+	<script>
+		$(document).ready(function () {
+			$("#id_barcode").select2({
+				placeholder: "Select or type barcode",
+				allowClear: true,
+			});
+		});
+	</script>
+
+	<script>
+		// thin sidebar toggle
+		document.getElementById("sidebarToggle").addEventListener("click", () => {
+			const sidebar = document.querySelector("aside");
+
+			if (sidebar.classList.contains("w-16")) {
+				sidebar.classList.remove("w-16");
+				sidebar.classList.add("w-0", "overflow-hidden");
+			} else {
+				sidebar.classList.remove("w-0", "overflow-hidden");
+				sidebar.classList.add("w-16");
+>>>>>>> 4e3a42a52670c9f54c3ebbd3769207680fbc7900
 			}
 
 			.thin-sidebar {
