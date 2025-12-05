@@ -277,12 +277,22 @@
                             </span>
                         </td>
 
+                        {% if perms.app1.can_view_registrar_menu %}
                         <td class="p-4 text-center">
                             <a href="{% url 'student_list' %}"
                                 class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition inline-flex items-center gap-2">
                                 Access <i class="fas fa-arrow-right"></i>
                             </a>
                         </td>
+                        {% else %}
+                        <td class="p-4 text-center">
+                            <span
+                                class="px-4 py-2 rounded-lg bg-white/10 opacity-50 cursor-not-allowed inline-flex items-center gap-2">
+                                Access <i class="fas fa-lock"></i>
+                            </span>
+                        </td>
+                        {% endif %}
+
                     </tr>
 
                     <!-- Library -->
