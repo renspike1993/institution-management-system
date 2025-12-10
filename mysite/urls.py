@@ -32,6 +32,10 @@ urlpatterns = [
     path('registrar/', include('apps.app1.urls')),
     path('library/', include('apps.app2.urls')),
     path('gates/', include('apps.controller_gates.urls')),
+    path('entrance-exam/', include('apps.app3.urls')),
+    
+    
+    
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
