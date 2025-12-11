@@ -128,19 +128,12 @@
                         </a>
                     </li>
 
-
+            
                     <li>
                         <a href="{% url 'mcat_user_list' %}"
                             class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 {% if request.resolver_match.url_name == 'user_list' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
                             <i class="fa-solid fa-users text-xs w-4"></i>
                             <span class="hidden lg:block ml-3">Examinee</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{% url 'opac' %}"
-                            class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 text-gray-300 transition-all duration-200">
-                            <i class="fa-solid fa-boxes text-xs w-4"></i>
-                            <span class="hidden lg:block ml-3">Programs</span>
                         </a>
                     </li>
 
@@ -150,7 +143,13 @@
                 </div>
 
                 <ul class="space-y-1 px-3 text-sm">
-
+                    <li>
+                        <a href="{% url 'opac' %}"
+                            class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 text-gray-300 transition-all duration-200">
+                            <i class="fa-solid fa-boxes text-xs w-4"></i>
+                            <span class="hidden lg:block ml-3">Programs</span>
+                        </a>
+                    </li>
 
                     <li>
                         <a href="#"

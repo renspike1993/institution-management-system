@@ -1,461 +1,50 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html>
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Integrated School Management Portal</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <meta charset="utf-8" />
+    <title>CodeMirror Python Editor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/codemirror.min.css" />
     <style>
-        @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
-
-        body {
-            font-family: "Inter", sans-serif;
-        }
-
-        .glass-card {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-        }
-
-        .system-card {
-            transition: all 0.4s cubic-bezier(0.23, 1, 0.320, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .system-card::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            transition: left 0.7s;
-        }
-
-        .system-card:hover::before {
-            left: 100%;
-        }
-
-        .gradient-bg {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-        }
-
-        .floating {
-            animation: floating 3.5s ease-in-out infinite;
-        }
-
-        @keyframes floating {
-
-            0%,
-            100% {
-                transform: translateY(0px);
-            }
-
-            50% {
-                transform: translateY(-12px);
-            }
-        }
-
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        /* Elegant hover effects */
-        .system-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-        }
-
-        .btn-elegant {
-            background: rgba(255, 255, 255, 0.12);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-elegant::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .btn-elegant:hover::before {
-            left: 100%;
-        }
-
-        .btn-elegant:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        /* Status indicators */
-        .status-indicator {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 6px;
-        }
-
-        .status-online {
-            background-color: #10b981;
-            box-shadow: 0 0 6px #10b981;
-        }
-
-        .status-offline {
-            background-color: #6b7280;
-        }
-
-        /* Elegant separator */
-        .separator {
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        .editor {
+            height: 320px;
+            border: 1px solid #ddd;
         }
     </style>
 </head>
 
-<body class="gradient-bg min-h-screen p-6 relative overflow-y-auto">
-    <!-- Background Elements -->
-    <div class="fixed inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute -top-40 -right-32 w-80 h-80 bg-white/5 rounded-full blur-3xl"></div>
-        <div class="absolute -bottom-40 -left-32 w-80 h-80 bg-white/5 rounded-full blur-3xl"></div>
-        <div
-            class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-white/3 rounded-full blur-3xl">
-        </div>
-    </div>
+<body>
+    <h2>Editable Python (CodeMirror)</h2>
+    <textarea id="code" name="code">
+# Type Python here
+def add(a, b):
+    return a + b
 
-    <div class="w-full max-w-6xl mx-auto relative z-10 py-8">
-        <!-- Header with Status -->
-        <div class="flex justify-between items-center mb-12">
-            <div class="text-white">
-                <div class="flex items-center gap-2 text-sm text-white/60 mb-1">
-                    <span class="status-indicator status-online"></span>
-                    <span>All Systems Operational</span>
-                </div>
-                <div class="text-xs text-white/40">Last updated: Just now</div>
-            </div>
-            <div class="flex items-center gap-4">
-                <div class="text-white/60 text-sm">
-                    <i class="fas fa-user-circle mr-1"></i>
-                    <span>Administrator</span>
-                </div>
-                <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-                    <i class="fas fa-cog text-white/70 text-sm"></i>
-                </div>
-            </div>
-        </div>
+print(add(2, 3))
+  </textarea>
+    <button id="get">Get code</button>
+    <pre id="out"></pre>
 
-        <!-- Hero Section -->
-        <div class="text-center text-white mb-16">
-            <div class="flex justify-center mb-6 floating">
-                <div
-                    class="w-28 h-28 glass-card rounded-3xl flex items-center justify-center shadow-2xl border border-white/20 relative">
-                    <i class="fas fa-cube text-5xl text-white"></i>
-                    <div class="absolute -bottom-2 -right-2 w-6 h-6 bg-green-400 rounded-full border-2 border-white">
-                    </div>
-                </div>
-            </div>
-            <h1 class="text-5xl font-bold mb-4 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
-                Integrated School Management Systems</h1>
-            <p class="text-white/70 text-lg mb-6 max-w-2xl mx-auto">Unified platform for comprehensive educational
-                institution management with seamless integration across all departments</p>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/mode/python/python.min.js"></script>
+    <script>
+        var editor = CodeMirror.fromTextArea(document.getElementById('code'), {
+            mode: "text/x-python",
+            lineNumbers: true,
+            indentUnit: 4,
+            tabSize: 4,
+            matchBrackets: true,
+            autofocus: true
+        });
 
-            <div class="inline-flex items-center gap-8 text-white/50 text-sm bg-white/5 rounded-full px-6 py-3">
-                <div class="flex items-center gap-2">
-                    <i class="fas fa-shield-alt"></i>
-                    <span>Enterprise Security</span>
-                </div>
-                <div class="w-1 h-1 bg-white/30 rounded-full"></div>
-                <div class="flex items-center gap-2">
-                    <i class="fas fa-sync-alt"></i>
-                    <span>Real-time Synchronization</span>
-                </div>
-                <div class="w-1 h-1 bg-white/30 rounded-full"></div>
-                <div class="flex items-center gap-2">
-                    <i class="fas fa-database"></i>
-                    <span>Centralized Database</span>
-                </div>
-            </div>
-        </div>
 
-        <!-- Systems Grid -->
 
-        <!-- Systems Table -->
-        <div class="bg-white/10 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/20">
 
-            <h2 class="text-2xl font-bold text-white mb-6">System Directory</h2>
-
-            <table class="min-w-full text-sm text-white">
-                <thead>
-                    <tr class="border-b border-white/20 text-white/70">
-                        <th class="p-3 text-left">System</th>
-                        <th class="p-3 text-left">Description</th>
-                        <th class="p-3 text-left">Status</th>
-                        <th class="p-3 text-center">Access</th>
-                    </tr>
-                </thead>
-
-                <tbody class="text-white/80">
-
-                    <!-- Entrance Exam -->
-                    <tr class="border-b border-white/10 hover:bg-white/5 transition">
-                        <td class="p-4 flex items-center gap-3">
-                            <div
-                                class="w-10 h-10 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center">
-                                <i class="fas fa-clipboard-check text-lg text-white"></i>
-                            </div>
-                            <div>
-                                <div class="font-semibold">Entrance Exam</div>
-                                <div class="text-white/50 text-xs">Assessment Portal</div>
-                            </div>
-                        </td>
-
-                        <td class="p-4 text-white/60">
-                            Secure online examination and student assessment environment.
-                        </td>
-
-                        <td class="p-4">
-                            <span class="inline-flex items-center gap-2">
-                                <span class="status-indicator status-online"></span>
-                                <span>Online</span>
-                            </span>
-                        </td>
-
-                        <td class="p-4 text-center">
-                            <a href="#"
-                                class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition inline-flex items-center gap-2">
-                                Access <i class="fas fa-arrow-right"></i>
-                            </a>
-                        </td>
-                    </tr>
-
-                    <!-- Registrar -->
-                    <tr class="border-b border-white/10 hover:bg-white/5 transition">
-                        <td class="p-4 flex items-center gap-3">
-                            <div
-                                class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-                                <i class="fas fa-user-graduate text-lg text-white"></i>
-                            </div>
-                            <div>
-                                <div class="font-semibold">Registrar's Office</div>
-                                <div class="text-white/50 text-xs">Student Data Center</div>
-                            </div>
-                        </td>
-
-                        <td class="p-4 text-white/60">
-                            Complete student records management and enrollment services.
-                        </td>
-
-                        <td class="p-4">
-                            <span class="inline-flex items-center gap-2">
-                                <span class="status-indicator status-online"></span>
-                                <span>Online</span>
-                            </span>
-                        </td>
-
-                        {% if perms.app1.can_view_registrar_menu %}
-                        <td class="p-4 text-center">
-                            <a href="{% url 'student_list' %}"
-                                class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition inline-flex items-center gap-2">
-                                Access <i class="fas fa-arrow-right"></i>
-                            </a>
-                        </td>
-                        {% else %}
-                        <td class="p-4 text-center">
-                            <span
-                                class="px-4 py-2 rounded-lg bg-white/10 opacity-50 cursor-not-allowed inline-flex items-center gap-2">
-                                Access <i class="fas fa-lock"></i>
-                            </span>
-                        </td>
-                        {% endif %}
-
-                    </tr>
-
-                    <!-- Library -->
-                    <tr class="border-b border-white/10 hover:bg-white/5 transition">
-                        <td class="p-4 flex items-center gap-3">
-                            <div
-                                class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
-                                <i class="fas fa-book-open text-lg text-white"></i>
-                            </div>
-                            <div>
-                                <div class="font-semibold">School Library</div>
-                                <div class="text-white/50 text-xs">Digital Resource Hub</div>
-                            </div>
-                        </td>
-
-                        <td class="p-4 text-white/60">
-                            Digital library catalog, resource tracking, and lending services.
-                        </td>
-
-                        <td class="p-4">
-                            <span class="inline-flex items-center gap-2">
-                                <span class="status-indicator status-online"></span>
-                                <span>Online</span>
-                            </span>
-                        </td>
-
-                        <td class="p-4 text-center">
-                            <a href="{% url 'library' %}dashboard"
-                                class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition inline-flex items-center gap-2">
-                                Access <i class="fas fa-arrow-right"></i>
-                            </a>
-                        </td>
-                    </tr>
-
-                    <!-- Control Gates -->
-                    <tr class="border-b border-white/10 hover:bg-white/5 transition">
-                        <td class="p-4 flex items-center gap-3">
-                            <div
-                                class="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
-                                <i class="fas fa-door-closed text-lg text-white"></i>
-                            </div>
-                            <div>
-                                <div class="font-semibold">Control Gates</div>
-                                <div class="text-white/50 text-xs">Turnstile</div>
-                            </div>
-                        </td>
-
-                        <td class="p-4 text-white/60">
-                            Turnstile gate monitoring and campus access control.
-                        </td>
-
-                        <td class="p-4">
-                            <span class="inline-flex items-center gap-2">
-                                <span class="status-indicator status-online"></span>
-                                <span>Online</span>
-                            </span>
-                        </td>
-
-                        <td class="p-4 text-center">
-                            <a href="{% url 'turnstile_attendance' %}"
-                                class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition inline-flex items-center gap-2">
-                                Access <i class="fas fa-arrow-right"></i>
-                            </a>
-                        </td>
-                    </tr>
-
-                    <!-- Kiosk -->
-                    <tr class="border-b border-white/10 hover:bg-white/5 transition">
-                        <td class="p-4 flex items-center gap-3">
-                            <div
-                                class="w-10 h-10 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl flex items-center justify-center">
-                                <i class="fas fa-desktop text-lg text-white"></i>
-                            </div>
-                            <div>
-                                <div class="font-semibold">Kiosk Services</div>
-                                <div class="text-white/50 text-xs">Self-Service Portal</div>
-                            </div>
-                        </td>
-
-                        <td class="p-4 text-white/60">
-                            Self-service terminal for student processing and transactions.
-                        </td>
-
-                        <td class="p-4">
-                            <span class="inline-flex items-center gap-2">
-                                <span class="status-indicator status-online"></span>
-                                <span>Online</span>
-                            </span>
-                        </td>
-
-                        <td class="p-4 text-center">
-                            <a href="#"
-                                class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition inline-flex items-center gap-2">
-                                Access <i class="fas fa-arrow-right"></i>
-                            </a>
-                        </td>
-                    </tr>
-
-                    <!-- Administrator -->
-                    <tr class="hover:bg-white/5 transition">
-                        <td class="p-4 flex items-center gap-3">
-                            <div
-                                class="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center">
-                                <i class="fas fa-user-shield text-lg text-white"></i>
-                            </div>
-                            <div>
-                                <div class="font-semibold">Administrator</div>
-                                <div class="text-white/50 text-xs">System Control Panel</div>
-                            </div>
-                        </td>
-
-                        <td class="p-4 text-white/60">
-                            Full system administration, roles, and platform security.
-                        </td>
-
-                        <td class="p-4">
-                            <span class="inline-flex items-center gap-2">
-                                <span class="status-indicator status-online"></span>
-                                <span>Online</span>
-                            </span>
-                        </td>
-
-                        <td class="p-4 text-center">
-                            <a href="{% url 'admin:index' %}"
-                                class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition inline-flex items-center gap-2">
-                                Access <i class="fas fa-arrow-right"></i>
-                            </a>
-                        </td>
-                    </tr>
-
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Separator -->
-        <div class="separator my-8"></div>
-
-        <!-- Footer -->
-        <div class="flex flex-col md:flex-row justify-between items-center text-white/50 text-sm">
-            <div class="flex items-center gap-6 mb-4 md:mb-0">
-                <div class="flex items-center gap-2">
-                    <i class="fas fa-user-shield"></i>
-                    <span>Rene M. Cabuhan II • System Developer</span>
-                </div>
-                <div class="hidden md:block w-1 h-1 bg-white/30 rounded-full"></div>
-                <div class="hidden md:flex items-center gap-2">
-                    <i class="fas fa-code"></i>
-                    <span>Integrated School Management Platform v2.1</span>
-                </div>
-            </div>
-            <div class="flex items-center gap-4">
-                <a href="#" class="hover:text-white transition-colors">
-                    <i class="fas fa-question-circle"></i>
-                </a>
-                <a href="#" class="hover:text-white transition-colors">
-                    <i class="fas fa-cog"></i>
-                </a>
-                <a href="#" class="hover:text-white transition-colors">
-                    <i class="fas fa-sign-out-alt"></i>
-                </a>
-            </div>
-        </div>
-    </div>
+        document.getElementById('get').addEventListener('click', function () {
+            document.getElementById('out').textContent = editor.getValue();
+            alert(editor)
+        });
+    </script>
 </body>
 
 </html>

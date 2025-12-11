@@ -1,603 +1,940 @@
-{% load static %} {% load custom_filters %}
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Admin Dashboard</title>
 
-		<script src="https://cdn.tailwindcss.com"></script>
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
 
-		<script>
-			tailwind.config = {
-				theme: {
-					extend: {
-						colors: {
-							soft: {
-								50: "#fafafa",
-								100: "#f4f4f5",
-								200: "#e4e4e7",
-								300: "#d4d4d8",
-								400: "#a1a1aa",
-								500: "#71717a",
-								600: "#52525b",
-								700: "#3f3f46",
-								800: "#27272a",
-								900: "#18181b",
-							},
-							accent: {
-								500: "#4F46E5",
-								600: "#4338CA",
-								700: "#3730A3",
-							},
-						},
-						fontFamily: {
-							sans: ["Inter", "system-ui", "sans-serif"],
-						},
-					},
-				},
-			};
-		</script>
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-		<style>
-			@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap");
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<<<<<<< HEAD
-			* {
-				font-family: "Inter", sans-serif;
-=======
-		* {
-			font-family: "Inter", sans-serif;
-		}
+  <style>
+    body {
+      background: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
 
-		.thin-sidebar {
-			transition: all 0.2s ease;
-		}
+    .sidebar-link.active {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      color: white;
+      box-shadow: 0 2px 8px rgba(30, 41, 59, 0.1);
+    }
 
-		.slim-scrollbar::-webkit-scrollbar {
-			width: 3px;
-		}
+    .sidebar-link:hover:not(.active) {
+      background-color: #f8fafc;
+    }
 
-		.slim-scrollbar::-webkit-scrollbar-track {
-			background: transparent;
-		}
+    .stat-card {
+      transition: all 0.2s ease;
+      border: 1px solid #e2e8f0;
+    }
 
-		.slim-scrollbar::-webkit-scrollbar-thumb {
-			background: #4b5563;
-			border-radius: 2px;
-		}
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      border-color: #cbd5e1;
+    }
 
-		.dark-sidebar {
-			background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
-		}
-	</style>
-	<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet" />
+    .service-card {
+      transition: all 0.2s ease;
+      border: 1px solid #e2e8f0;
+    }
+
+    .service-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .table-row {
+      border-top: 1px solid #f1f5f9;
+    }
+
+    .table-row:hover {
+      background-color: #f8fafc;
+    }
+
+    .status-badge {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
+
+    .avatar-ring {
+      border: 2px solid #ffffff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .header-divider {
+      height: 24px;
+      width: 1px;
+      background-color: #e2e8f0;
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+      width: 90%;
+      max-width: 500px;
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-overlay.active .modal-container {
+      transform: translateY(0);
+    }
+
+    .modal-header {
+      padding: 1.5rem 1.5rem 1rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+    }
+
+    .modal-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.625rem 0.875rem;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      transition: border-color 0.2s;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 0.375rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    /* Modal animation */
+    @keyframes modalFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-container {
+      animation: modalFadeIn 0.3s ease-out;
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/codemirror.min.css" />
+  <style>
+    .editor {
+      height: 320px;
+      border: 1px solid #ddd;
+    }
+  </style>
 </head>
 
-<body class="bg-soft-50 text-soft-700">
-	<div class="flex h-screen overflow-hidden">
-		<!-- DARK ELEGANT SIDEBAR -->
-		<aside class="thin-sidebar w-16 lg:w-52 dark-sidebar border-r border-gray-700 flex flex-col">
-			<!-- Logo -->
-			<div class="px-4 py-5 border-b border-gray-700">
-				<div class="flex items-center space-x-2 lg:space-x-3">
-					<div
-						class="w-8 h-8 rounded-md bg-gradient-to-r from-accent-500 to-purple-600 flex items-center justify-center text-white text-xs shadow-lg">
-						<i class="fa-solid fa-cube"></i>
-					</div>
-					<span class="hidden lg:block text-sm tracking-wide font-semibold text-white"> LIBRARY<span
-							class="text-accent-400"></span> </span>
-				</div>
-			</div>
-
-			<!-- User -->
-			<div class="px-4 py-4 border-b border-gray-700 flex items-center space-x-3">
-				<div
-					class="h-8 w-8 rounded-full bg-gradient-to-r from-accent-500 to-purple-600 text-white flex items-center justify-center text-xs shadow-md">
-					{{ request.user.first_name|slice:":1" }}{{ request.user.last_name|slice:":1" }}
-				</div>
-
-				<div class="hidden lg:block">
-					<p class="text-xs font-medium text-white">
-						{{ request.user.get_full_name|default:request.user.username }}
-					</p>
-
-					<p class="text-[11px] text-gray-400">
-						{% if request.user.is_superuser %}
-						Super Admin
-						{% elif request.user.is_staff %}
-						Staff
-						{% elif request.user.groups.first %}
-						{{ request.user.groups.first.name }}
-						{% else %}
-						User
-						{% endif %}
-					</p>
-				</div>
-			</div>
-
-
-			<!-- Navigation -->
-
-			<nav class="flex-1 overflow-y-auto slim-scrollbar py-4">
-				<ul class="space-y-1 px-3 text-sm">
-					{% comment %} DASHBOARD {% endcomment %}
-					<li>
-						<a href="{% url 'dashboard' %}"
-							class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 {% if request.resolver_match.url_name == 'dashboard' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
-							<i class="fa-solid fa-gauge text-xs w-4"></i>
-							<span class="hidden lg:block ml-3">Dashboard</span>
-						</a>
-					</li>
-
-					<li>
-						<a href="{% url 'transaction_list' %}"
-							class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 {% if request.resolver_match.url_name == 'transaction_list' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
-							<i class="fa-solid fa-arrow-right-arrow-left text-xs w-4"></i>
-							<span class="hidden lg:block ml-3">Transactions</span>
-						</a>
-					</li>
-
-					<li>
-						<a href="{% url 'collection_list' %}"
-							class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 {% if request.resolver_match.url_name == 'collection_list' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
-							<i class="fa-solid fa-folder text-xs w-4"></i>
-							<span class="hidden lg:block ml-3">Collections</span>
-						</a>
-					</li>
-
-					<li>
-						<a href="{% url 'book_list' %}"
-							class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 {% if request.resolver_match.url_name == 'book_list' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
-							<i class="fa-solid fa-book text-xs w-4"></i>
-							<span class="hidden lg:block ml-3">Books</span>
-						</a>
-					</li>
-
-					<li>
-						<a href="{% url 'user_list' %}"
-							class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 {% if request.resolver_match.url_name == 'user_list' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
-							<i class="fa-solid fa-users text-xs w-4"></i>
-							<span class="hidden lg:block ml-3">Users</span>
-						</a>
-					</li>
-
-					<li>
-						<a href="{% url 'department_list' %}"
-							class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 {% if request.resolver_match.url_name == 'department_list' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
-							<i class="fa-solid fa-users text-xs w-4"></i>
-							<span class="hidden lg:block ml-3">Departments</span>
-						</a>
-					</li>
-				</ul>
-
-				<div class="hidden lg:block px-3 mt-6 mb-2 text-[11px] uppercase text-gray-500 tracking-wider">Tools
-				</div>
-
-				<ul class="space-y-1 px-3 text-sm">
-					<li>
-						<a href="{% url 'opac' %}"
-							class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 text-gray-300 transition-all duration-200">
-							<i class="fa-solid fa-boxes text-xs w-4"></i>
-							<span class="hidden lg:block ml-3">OPAC</span>
-						</a>
-					</li>
-
-					<li>
-						<a href="#"
-							class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 text-gray-300 transition-all duration-200">
-							<i class="fa-solid fa-boxes text-xs w-4"></i>
-							<span class="hidden lg:block ml-3">Inventory</span>
-						</a>
-					</li>
-					<li>
-						<a href="#"
-							class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 text-gray-300 transition-all duration-200">
-							<i class="fa-solid fa-chart-bar text-xs w-4"></i>
-							<span class="hidden lg:block ml-3">Reports</span>
-						</a>
-					</li>
-					<li>
-						<a href="{% url 'manual' %}"
-							class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 text-gray-300 transition-all duration-200 {% if request.resolver_match.url_name == 'manual' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
-							<i class="fa-solid fa-book-open text-xs w-4"></i>
-							<span class="hidden lg:block ml-3">User Manual</span>
-						</a>
-					</li>
-					<li>
-						<a href="{% url 'ads' %}"
-							class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 text-gray-300 transition-all duration-200 {% if request.resolver_match.url_name == 'ads' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
-							<i class="fa-solid fa-book-open text-xs w-4"></i>
-							<span class="hidden lg:block ml-3">Ads Section</span>
-						</a>
-					</li>
-
-
-
-
-				</ul>
-
-				<div class="hidden lg:block px-3 mt-6 mb-2 text-[11px] uppercase text-gray-500 tracking-wider">
-					Security Settings
-				</div>
-
-				<ul class="space-y-1 px-3 text-sm">
-					<li>
-						<a href="{% url 'group_list' %}"
-							class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 text-gray-300 transition-all duration-200 {% if request.resolver_match.url_name == 'group_list' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
-							<i class="fa-solid fa-book-open text-xs w-4"></i>
-							<span class="hidden lg:block ml-3">Roles & Permission</span>
-						</a>
-					</li>
-					<li>
-						<a href="{% url 'security_logs' %}"
-							class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 text-gray-300 transition-all duration-200 {% if request.resolver_match.url_name == 'security_logs' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
-							<i class="fa-solid fa-book-open text-xs w-4"></i>
-							<span class="hidden lg:block ml-3">Attendance Logs</span>
-						</a>
-					</li>
-				</ul>
-
-			</nav>
-
-			<!-- Logout -->
-			<div class="border-t border-gray-700 p-3">
-				{% if user.is_authenticated %}
-				<form method="POST" action="{% url 'logout' %}">
-					{% csrf_token %}
-					<button
-						class="flex items-center w-full px-3 py-2 text-sm rounded-lg hover:bg-gray-700 text-gray-300 transition-all duration-200"
-						type="submit">
-						<i class="fa-solid fa-arrow-right-from-bracket text-xs w-4"></i>
-						<span class="hidden lg:block ml-3">Logout</span>
-					</button>
-				</form>
-				{% endif %}
-			</div>
-		</aside>
-
-		<!-- MAIN AREA -->
-		<div class="flex-1 flex flex-col overflow-hidden">
-			<!-- HEADER -->
-			<header class="bg-white border-b border-soft-200 px-4 py-3 flex items-center justify-between">
-				<div class="flex items-center space-x-2">
-					<button id="sidebarToggle" class="p-2 rounded-md hover:bg-soft-100 text-soft-600">
-						<i class="fa-solid fa-bars text-sm"></i>
-					</button>
-
-					<div class="relative">
-						<i class="fa-solid fa-search absolute left-3 top-2 text-soft-400 text-xs"></i>
-						<input type="text" placeholder="Search..."
-							class="pl-9 pr-3 py-1.5 text-sm border border-soft-300 rounded-lg focus:ring-accent-500 focus:border-accent-500 w-48 lg:w-64" />
-					</div>
-				</div>
-
-				<div class="flex items-center space-x-3">
-					<button class="relative p-2 rounded-md hover:bg-soft-100 text-soft-600">
-						<i class="fa-solid fa-bell text-sm"></i>
-						<span
-							class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] h-4 w-4 rounded-full flex items-center justify-center">5</span>
-					</button>
-
-					<button class="p-2 rounded-md hover:bg-soft-100 text-soft-600">
-						<i class="fa-solid fa-gear text-sm"></i>
-					</button>
-
-					<div class="h-8 w-8 rounded-full bg-accent-500 text-white flex items-center justify-center text-xs">
-						JD</div>
-				</div>
-			</header>
-
-			<!-- CONTENT -->
-			<main class="flex-1 overflow-y-auto slim-scrollbar p-5 bg-soft-50">
-				{% block content %}{% endblock %}
-				<!-- Messages Alert -->
-				{% if messages %}
-				<div id="messages-container" class="fixed bottom-4 right-4 z-50 space-y-2">
-					{% for message in messages %}
-					<div
-						class="message px-4 py-2 rounded shadow text-white {% if message.tags == 'success' %} bg-green-600 {% elif message.tags == 'error' %} bg-red-600 {% elif message.tags == 'warning' %} bg-yellow-500 {% else %} bg-blue-600 {% endif %}">
-						{{ message }}</div>
-					{% endfor %}
-				</div>
-
-				<script>
-					// Automatically remove messages after 3 seconds
-					setTimeout(() => {
-						const container = document.getElementById("messages-container");
-						if (container) {
-							container.style.transition = "opacity 0.5s";
-							container.style.opacity = "0";
-							setTimeout(() => container.remove(), 500); // remove after fade out
-						}
-					}, 3000);
-				</script>
-				{% endif %}
-			</main>
-		</div>
-	</div>
-	<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
-	<!-- if not already included -->
-	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
-	<script>
-		$(document).ready(function () {
-			$("#id_barcode").select2({
-				placeholder: "Select or type barcode",
-				allowClear: true,
-			});
-		});
-	</script>
-
-	<script>
-		// thin sidebar toggle
-		document.getElementById("sidebarToggle").addEventListener("click", () => {
-			const sidebar = document.querySelector("aside");
-
-			if (sidebar.classList.contains("w-16")) {
-				sidebar.classList.remove("w-16");
-				sidebar.classList.add("w-0", "overflow-hidden");
-			} else {
-				sidebar.classList.remove("w-0", "overflow-hidden");
-				sidebar.classList.add("w-16");
->>>>>>> 4e3a42a52670c9f54c3ebbd3769207680fbc7900
-			}
-
-			.thin-sidebar {
-				transition: all 0.2s ease;
-			}
-
-			.slim-scrollbar::-webkit-scrollbar {
-				width: 3px;
-			}
-
-			.slim-scrollbar::-webkit-scrollbar-track {
-				background: transparent;
-			}
-
-			.slim-scrollbar::-webkit-scrollbar-thumb {
-				background: #4b5563;
-				border-radius: 2px;
-			}
-
-			.dark-sidebar {
-				background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
-			}
-		</style>
-		<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet" />
-	</head>
-
-	<body class="bg-soft-50 text-soft-700">
-		<div class="flex h-screen overflow-hidden">
-			<!-- DARK ELEGANT SIDEBAR -->
-			<aside class="thin-sidebar w-16 lg:w-52 dark-sidebar border-r border-gray-700 flex flex-col">
-				<!-- Logo -->
-				<div class="px-4 py-5 border-b border-gray-700">
-					<div class="flex items-center space-x-2 lg:space-x-3">
-						<div class="w-8 h-8 rounded-md bg-gradient-to-r from-accent-500 to-purple-600 flex items-center justify-center text-white text-xs shadow-lg">
-							<i class="fa-solid fa-cube"></i>
-						</div>
-						<span class="hidden lg:block text-sm tracking-wide font-semibold text-white"> LIBRARY<span class="text-accent-400"></span> </span>
-					</div>
-				</div>
-
-				<!-- User -->
-				<div class="px-4 py-4 border-b border-gray-700 flex items-center space-x-3">
-					<div class="h-8 w-8 rounded-full bg-gradient-to-r from-accent-500 to-purple-600 text-white flex items-center justify-center text-xs shadow-md">{{ request.user.first_name|slice:":1" }}{{ request.user.last_name|slice:":1" }}</div>
-
-					<div class="hidden lg:block">
-						<p class="text-xs font-medium text-white">{{ request.user.get_full_name|default:request.user.username }}</p>
-
-						<p class="text-[11px] text-gray-400">{% if request.user.is_superuser %} Super Admin {% elif request.user.is_staff %} Staff {% elif request.user.groups.first %} {{ request.user.groups.first.name }} {% else %} User {% endif %}</p>
-					</div>
-				</div>
-
-				<!-- Navigation -->
-
-				<nav class="flex-1 overflow-y-auto slim-scrollbar py-4">
-					<ul class="space-y-1 px-3 text-sm">
-						{% comment %} DASHBOARD {% endcomment %}
-						<li>
-							{% for group in user.groups.all %} {{ group.name }}{% if not forloop.last %}, {% endif %} {% empty %} No groups {% endfor %}
-							<a href="{% url 'dashboard' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 {% if request.resolver_match.url_name == 'dashboard' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
-								<i class="fa-solid fa-gauge text-xs w-4"></i>
-								<span class="hidden lg:block ml-3">Dashboard</span>
-							</a>
-						</li>
-
-						<li>
-							<a href="{% url 'transaction_list' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 {% if request.resolver_match.url_name == 'transaction_list' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
-								<i class="fa-solid fa-arrow-right-arrow-left text-xs w-4"></i>
-								<span class="hidden lg:block ml-3">Transactions</span>
-							</a>
-						</li>
-
-						<li>
-							<a href="{% url 'collection_list' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 {% if request.resolver_match.url_name == 'collection_list' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
-								<i class="fa-solid fa-folder text-xs w-4"></i>
-								<span class="hidden lg:block ml-3">Collections</span>
-							</a>
-						</li>
-
-						<li>
-							<a href="{% url 'book_list' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 {% if request.resolver_match.url_name == 'book_list' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
-								<i class="fa-solid fa-book text-xs w-4"></i>
-								<span class="hidden lg:block ml-3">Books</span>
-							</a>
-						</li>
-
-						<li>
-							<a href="{% url 'user_list' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 {% if request.resolver_match.url_name == 'user_list' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
-								<i class="fa-solid fa-users text-xs w-4"></i>
-								<span class="hidden lg:block ml-3">Users</span>
-							</a>
-						</li>
-
-						<li>
-							<a href="{% url 'department_list' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200 {% if request.resolver_match.url_name == 'department_list' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
-								<i class="fa-solid fa-users text-xs w-4"></i>
-								<span class="hidden lg:block ml-3">Departments</span>
-							</a>
-						</li>
-					</ul>
-
-					<div class="hidden lg:block px-3 mt-6 mb-2 text-[11px] uppercase text-gray-500 tracking-wider">Tools</div>
-
-					<ul class="space-y-1 px-3 text-sm">
-						<li>
-							<a href="{% url 'opac' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 text-gray-300 transition-all duration-200">
-								<i class="fa-solid fa-boxes text-xs w-4"></i>
-								<span class="hidden lg:block ml-3">OPAC</span>
-							</a>
-						</li>
-
-						<li>
-							<a href="#" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 text-gray-300 transition-all duration-200">
-								<i class="fa-solid fa-boxes text-xs w-4"></i>
-								<span class="hidden lg:block ml-3">Inventory</span>
-							</a>
-						</li>
-						<li>
-							<a href="#" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 text-gray-300 transition-all duration-200">
-								<i class="fa-solid fa-chart-bar text-xs w-4"></i>
-								<span class="hidden lg:block ml-3">Reports</span>
-							</a>
-						</li>
-						<li>
-							<a href="{% url 'manual' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 text-gray-300 transition-all duration-200 {% if request.resolver_match.url_name == 'manual' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
-								<i class="fa-solid fa-book-open text-xs w-4"></i>
-								<span class="hidden lg:block ml-3">User Manual</span>
-							</a>
-						</li>
-						<li>
-							<a href="{% url 'ads' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 text-gray-300 transition-all duration-200 {% if request.resolver_match.url_name == 'ads' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
-								<i class="fa-solid fa-book-open text-xs w-4"></i>
-								<span class="hidden lg:block ml-3">Ads Section</span>
-							</a>
-						</li>
-					</ul>
-
-					<div class="hidden lg:block px-3 mt-6 mb-2 text-[11px] uppercase text-gray-500 tracking-wider">Security Settings</div>
-
-					<ul class="space-y-1 px-3 text-sm">
-						<li>
-							<a href="{% url 'group_list' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 text-gray-300 transition-all duration-200 {% if request.resolver_match.url_name == 'group_list' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
-								<i class="fa-solid fa-book-open text-xs w-4"></i>
-								<span class="hidden lg:block ml-3">Roles & Permission</span>
-							</a>
-						</li>
-						<li>
-							<a href="{% url 'security_logs' %}" class="flex items-center px-3 py-2 rounded-lg hover:bg-gray-700 text-gray-300 transition-all duration-200 {% if request.resolver_match.url_name == 'security_logs' %} bg-gray-700 text-white {% else %} text-gray-300 {% endif %}">
-								<i class="fa-solid fa-book-open text-xs w-4"></i>
-								<span class="hidden lg:block ml-3">Attendance Logs</span>
-							</a>
-						</li>
-					</ul>
-				</nav>
-
-				<!-- Logout -->
-				<div class="border-t border-gray-700 p-3">
-					{% if user.is_authenticated %}
-					<form method="POST" action="{% url 'logout' %}">
-						{% csrf_token %}
-						<button class="flex items-center w-full px-3 py-2 text-sm rounded-lg hover:bg-gray-700 text-gray-300 transition-all duration-200" type="submit">
-							<i class="fa-solid fa-arrow-right-from-bracket text-xs w-4"></i>
-							<span class="hidden lg:block ml-3">Logout</span>
-						</button>
-					</form>
-					{% endif %}
-				</div>
-			</aside>
-
-			<!-- MAIN AREA -->
-			<div class="flex-1 flex flex-col overflow-hidden">
-				<!-- HEADER -->
-				<header class="bg-white border-b border-soft-200 px-4 py-3 flex items-center justify-between">
-					<div class="flex items-center space-x-2">
-						<button id="sidebarToggle" class="p-2 rounded-md hover:bg-soft-100 text-soft-600">
-							<i class="fa-solid fa-bars text-sm"></i>
-						</button>
-
-						<div class="relative">
-							<i class="fa-solid fa-search absolute left-3 top-2 text-soft-400 text-xs"></i>
-							<input type="text" placeholder="Search..." class="pl-9 pr-3 py-1.5 text-sm border border-soft-300 rounded-lg focus:ring-accent-500 focus:border-accent-500 w-48 lg:w-64" />
-						</div>
-					</div>
-
-					<div class="flex items-center space-x-3">
-						<button class="relative p-2 rounded-md hover:bg-soft-100 text-soft-600">
-							<i class="fa-solid fa-bell text-sm"></i>
-							<span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] h-4 w-4 rounded-full flex items-center justify-center">5</span>
-						</button>
-
-						<button class="p-2 rounded-md hover:bg-soft-100 text-soft-600">
-							<i class="fa-solid fa-gear text-sm"></i>
-						</button>
-
-						<div class="h-8 w-8 rounded-full bg-accent-500 text-white flex items-center justify-center text-xs">JD</div>
-					</div>
-				</header>
-
-				<!-- CONTENT -->
-				<main class="flex-1 overflow-y-auto slim-scrollbar p-5 bg-soft-50">
-					{% block content %}{% endblock %}
-					<!-- Messages Alert -->
-					{% if messages %}
-					<div id="messages-container" class="fixed bottom-4 right-4 z-50 space-y-2">
-						{% for message in messages %}
-						<div class="message px-4 py-2 rounded shadow text-white {% if message.tags == 'success' %} bg-green-600 {% elif message.tags == 'error' %} bg-red-600 {% elif message.tags == 'warning' %} bg-yellow-500 {% else %} bg-blue-600 {% endif %}">{{ message }}</div>
-						{% endfor %}
-					</div>
-
-					<script>
-						// Automatically remove messages after 3 seconds
-						setTimeout(() => {
-							const container = document.getElementById("messages-container");
-							if (container) {
-								container.style.transition = "opacity 0.5s";
-								container.style.opacity = "0";
-								setTimeout(() => container.remove(), 500); // remove after fade out
-							}
-						}, 3000);
-					</script>
-					{% endif %}
-				</main>
-			</div>
-		</div>
-		<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
-		<!-- if not already included -->
-		<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
-		<script>
-			$(document).ready(function () {
-				$("#id_barcode").select2({
-					placeholder: "Select or type barcode",
-					allowClear: true,
-				});
-			});
-		</script>
-
-		<script>
-			// thin sidebar toggle
-			document.getElementById("sidebarToggle").addEventListener("click", () => {
-				const sidebar = document.querySelector("aside");
-
-				if (sidebar.classList.contains("w-16")) {
-					sidebar.classList.remove("w-16");
-					sidebar.classList.add("w-0", "overflow-hidden");
-				} else {
-					sidebar.classList.remove("w-0", "overflow-hidden");
-					sidebar.classList.add("w-16");
-				}
-			});
-		</script>
-
-		<!-- Floating Back to Administrator Button -->
-
-		{% if request.user.is_superuser %}
-		<a href="http://{{ request.get_host }}/" class="fixed bottom-6 right-6 z-50 bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-full shadow-lg flex items-center gap-2 transition-all duration-200">
-			<i class="fa-solid fa-user-shield"></i>
-			<span class="hidden sm:inline">Back to Administrator Portal</span>
-		</a>
-		{% endif %}
-	</body>
+<body class="min-h-screen">
+
+  <div class="flex">
+
+    <!-- SIDEBAR -->
+    <aside class="w-64 bg-white border-r border-gray-200 min-h-screen p-6 hidden md:block">
+      <div class="flex items-center mb-8">
+        <div class="w-8 h-8 rounded-lg bg-gray-900 flex items-center justify-center mr-3">
+          <i class="fas fa-crown text-white text-sm"></i>
+        </div>
+        <h2 class="text-xl font-bold text-gray-900">Developer</h2>
+      </div>
+
+      <nav class="space-y-1">
+        <a href="#" class="sidebar-link active flex items-center px-4 py-3 rounded-xl text-gray-700 font-medium">
+          <i class="fas fa-chart-pie text-gray-600 mr-3 w-5 text-center"></i>
+          Dashboard
+        </a>
+        <a href="#" class="sidebar-link flex items-center px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100">
+          <i class="fas fa-ticket-alt text-gray-500 mr-3 w-5 text-center"></i>
+          Tickets
+          <span class="ml-auto bg-red-50 text-red-700 text-xs font-medium px-2 py-1 rounded-full">24</span>
+        </a>
+        <a href="#" class="sidebar-link flex items-center px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100">
+          <i class="fas fa-concierge-bell text-gray-500 mr-3 w-5 text-center"></i>
+          Services
+        </a>
+        <a href="#" class="sidebar-link flex items-center px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100">
+          <i class="fas fa-users text-gray-500 mr-3 w-5 text-center"></i>
+          Users
+        </a>
+        <a href="#" class="sidebar-link flex items-center px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100">
+          <i class="fas fa-cog text-gray-500 mr-3 w-5 text-center"></i>
+          Settings
+        </a>
+      </nav>
+
+      <div class="mt-12 p-4 bg-gray-50 rounded-xl">
+        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">System Status</h3>
+        <div class="flex items-center">
+          <div class="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+          <span class="text-sm text-gray-700">All systems operational</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="flex-1">
+
+      <!-- Top Bar -->
+      <header class="bg-white border-b border-gray-200 p-4 flex justify-between items-center">
+        <div class="flex items-center">
+          <h1 class="text-xl font-semibold text-gray-900">Dashboard</h1>
+          <div class="header-divider mx-4"></div>
+          <div class="text-sm text-gray-600 flex items-center">
+            <i class="far fa-calendar mr-2"></i>
+            <span>Dec 10, 2025</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <button class="relative p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+            <i class="fas fa-bell"></i>
+            <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+          </button>
+
+          <div class="flex items-center gap-3">
+            <div class="text-right hidden md:block">
+              <p class="text-sm font-medium text-gray-900">Admin User</p>
+              <p class="text-xs text-gray-500">Super Admin</p>
+            </div>
+            <img src="https://i.pravatar.cc/40?img=1" class="w-10 h-10 rounded-full avatar-ring" />
+          </div>
+        </div>
+      </header>
+
+      <!-- CONTENT -->
+      <div class="p-6">
+
+        <!-- STAT CARDS -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+
+          <div class="stat-card bg-white p-5 rounded-xl shadow-sm">
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Today's Tickets</p>
+                <h2 class="text-3xl font-bold text-gray-900 mt-2">128</h2>
+              </div>
+              <div class="p-3 rounded-lg bg-blue-50 text-blue-600">
+                <i class="fas fa-ticket-alt"></i>
+              </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-gray-100">
+              <span class="text-xs text-green-600 font-medium">
+                <i class="fas fa-arrow-up mr-1"></i> 12% from yesterday
+              </span>
+            </div>
+          </div>
+
+          <div class="stat-card bg-white p-5 rounded-xl shadow-sm">
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Pending</p>
+                <h2 class="text-3xl font-bold text-gray-900 mt-2">47</h2>
+              </div>
+              <div class="p-3 rounded-lg bg-yellow-50 text-yellow-600">
+                <i class="fas fa-clock"></i>
+              </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-gray-100">
+              <span class="text-xs text-red-600 font-medium">
+                <i class="fas fa-exclamation-circle mr-1"></i> 3 > 30min
+              </span>
+            </div>
+          </div>
+
+          <div class="stat-card bg-white p-5 rounded-xl shadow-sm">
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Completed</p>
+                <h2 class="text-3xl font-bold text-gray-900 mt-2">81</h2>
+              </div>
+              <div class="p-3 rounded-lg bg-green-50 text-green-600">
+                <i class="fas fa-check-circle"></i>
+              </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-gray-100">
+              <span class="text-xs text-gray-600 font-medium">63% completion rate</span>
+            </div>
+          </div>
+
+          <div class="stat-card bg-white p-5 rounded-xl shadow-sm">
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Active Counters</p>
+                <h2 class="text-3xl font-bold text-gray-900 mt-2">5/8</h2>
+              </div>
+              <div class="p-3 rounded-lg bg-purple-50 text-purple-600">
+                <i class="fas fa-user-tie"></i>
+              </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-gray-100">
+              <div class="w-full bg-gray-200 rounded-full h-1.5">
+                <div class="bg-gray-700 h-1.5 rounded-full" style="width: 62.5%"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- SERVICES SECTION -->
+        <div class="mb-10">
+          <div class="flex justify-between items-center mb-5">
+            <div>
+              <h2 class="text-lg font-semibold text-gray-900">Services</h2>
+              <p class="text-sm text-gray-600">Available service counters</p>
+            </div>
+            <button id="openModalBtn"
+              class="text-sm font-medium text-gray-700 hover:text-gray-900 flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition">
+              <i class="fas fa-plus mr-2"></i> Add Service
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+            <div class="service-card group bg-white p-5 rounded-xl cursor-pointer">
+              <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <i class="fas fa-file-invoice-dollar text-blue-600"></i>
+                </div>
+                <span class="text-xs font-medium px-2 py-1 rounded-full bg-blue-50 text-blue-700">Active</span>
+              </div>
+              <h3 class="text-base font-semibold text-gray-900 mb-1">Billing</h3>
+              <p class="text-sm text-gray-600 mb-3">Payments, invoices, statements</p>
+              <div class="text-xs text-gray-500 flex items-center group-hover:text-gray-700">
+                <i class="fas fa-user-tie mr-2"></i>
+                <span>Counters 1-3</span>
+              </div>
+            </div>
+
+            <div class="service-card group bg-white p-5 rounded-xl cursor-pointer">
+              <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                  <i class="fas fa-headset text-green-600"></i>
+                </div>
+                <span class="text-xs font-medium px-2 py-1 rounded-full bg-green-50 text-green-700">Active</span>
+              </div>
+              <h3 class="text-base font-semibold text-gray-900 mb-1">Support</h3>
+              <p class="text-sm text-gray-600 mb-3">Technical, customer support</p>
+              <div class="text-xs text-gray-500 flex items-center group-hover:text-gray-700">
+                <i class="fas fa-user-tie mr-2"></i>
+                <span>Counters 4-5</span>
+              </div>
+            </div>
+
+            <div class="service-card group bg-white p-5 rounded-xl cursor-pointer">
+              <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                  <i class="fas fa-sync-alt text-purple-600"></i>
+                </div>
+                <span class="text-xs font-medium px-2 py-1 rounded-full bg-yellow-50 text-yellow-700">Busy</span>
+              </div>
+              <h3 class="text-base font-semibold text-gray-900 mb-1">Renewal</h3>
+              <p class="text-sm text-gray-600 mb-3">Licenses, permits, subscriptions</p>
+              <div class="text-xs text-gray-500 flex items-center group-hover:text-gray-700">
+                <i class="fas fa-user-tie mr-2"></i>
+                <span>Counter 6</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- TABLE -->
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div class="p-5 border-b border-gray-200">
+            <div class="flex justify-between items-center">
+              <div>
+                <h2 class="text-lg font-semibold text-gray-900">Recent Tickets</h2>
+                <p class="text-sm text-gray-600">Last updated: Today, 14:30</p>
+              </div>
+              <button class="text-sm font-medium text-gray-700 hover:text-gray-900 flex items-center">
+                <i class="fas fa-download mr-2"></i> Export
+              </button>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-gray-50 text-gray-600 text-xs font-medium uppercase tracking-wider">
+                <tr>
+                  <th class="p-4 text-left">Ticket</th>
+                  <th class="p-4 text-left">Service</th>
+                  <th class="p-4 text-left">Counter</th>
+                  <th class="p-4 text-left">Status</th>
+                  <th class="p-4 text-left">Wait Time</th>
+                  <th class="p-4 text-left">Date</th>
+                </tr>
+              </thead>
+
+              <tbody class="text-sm">
+                <tr class="table-row">
+                  <td class="p-4">
+                    <div class="font-semibold text-gray-900 flex items-center">
+                      <i class="fas fa-receipt text-blue-500 mr-2"></i>
+                      A045
+                    </div>
+                  </td>
+                  <td class="p-4 text-gray-700">Billing</td>
+                  <td class="p-4 text-gray-700 font-medium">Counter 2</td>
+                  <td class="p-4">
+                    <span class="status-badge px-3 py-1.5 rounded-full bg-yellow-50 text-yellow-700">Pending</span>
+                  </td>
+                  <td class="p-4 text-gray-700">
+                    <div class="flex items-center">
+                      <i class="fas fa-clock text-yellow-500 mr-2 text-xs"></i>
+                      14 min
+                    </div>
+                  </td>
+                  <td class="p-4 text-gray-700">2025-12-10</td>
+                </tr>
+
+                <tr class="table-row">
+                  <td class="p-4">
+                    <div class="font-semibold text-gray-900 flex items-center">
+                      <i class="fas fa-headset text-green-500 mr-2"></i>
+                      S102
+                    </div>
+                  </td>
+                  <td class="p-4 text-gray-700">Support</td>
+                  <td class="p-4 text-gray-700 font-medium">Counter 4</td>
+                  <td class="p-4">
+                    <span class="status-badge px-3 py-1.5 rounded-full bg-green-50 text-green-700">Completed</span>
+                  </td>
+                  <td class="p-4 text-gray-700">
+                    <div class="flex items-center">
+                      <i class="fas fa-check-circle text-green-500 mr-2 text-xs"></i>
+                      8 min
+                    </div>
+                  </td>
+                  <td class="p-4 text-gray-700">2025-12-10</td>
+                </tr>
+
+                <tr class="table-row">
+                  <td class="p-4">
+                    <div class="font-semibold text-gray-900 flex items-center">
+                      <i class="fas fa-sync-alt text-purple-500 mr-2"></i>
+                      R078
+                    </div>
+                  </td>
+                  <td class="p-4 text-gray-700">Renewal</td>
+                  <td class="p-4 text-gray-700 font-medium">Counter 6</td>
+                  <td class="p-4">
+                    <span class="status-badge px-3 py-1.5 rounded-full bg-blue-50 text-blue-700">Serving</span>
+                  </td>
+                  <td class="p-4 text-gray-700">
+                    <div class="flex items-center">
+                      <i class="fas fa-user-clock text-blue-500 mr-2 text-xs"></i>
+                      22 min
+                    </div>
+                  </td>
+                  <td class="p-4 text-gray-700">2025-12-10</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="p-4 border-t border-gray-200 flex justify-between items-center">
+            <div class="text-sm text-gray-600">Showing 3 of 128 tickets</div>
+            <div class="flex items-center space-x-1">
+              <button
+                class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
+                <i class="fas fa-chevron-left text-xs"></i>
+              </button>
+              <button
+                class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-900 text-white text-sm">1</button>
+              <button
+                class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm">2</button>
+              <button
+                class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm">3</button>
+              <button
+                class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
+                <i class="fas fa-chevron-right text-xs"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+
+
+        <!-- Adjuscency Matrix -->
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div class="p-5 border-b border-gray-200">
+            <div class="flex justify-between items-center">
+              <div>
+                <h2 class="text-lg font-semibold text-gray-900">ERD (Adjuscentcy Matrix)</h2>
+                <p class="text-sm text-gray-600">Last updated: Today, 14:30</p>
+              </div>
+              <button class="text-sm font-medium text-gray-700 hover:text-gray-900 flex items-center">
+                <i class="fas fa-download mr-2"></i> Export
+              </button>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-gray-50 text-gray-600 text-xs font-medium uppercase tracking-wider">
+                <tr>
+                  <th class="p-4 text-left"> </th>
+                  <th class="p-4 text-left">Users</th>
+                  <th class="p-4 text-left">Counter</th>
+                  <th class="p-4 text-left">Status</th>
+                  <th class="p-4 text-left">Wait Time</th>
+                  <th class="p-4 text-left">Date</th>
+                </tr>
+              </thead>
+
+              <tbody class="text-sm">
+                <tr class="table-row">
+                  <td class="p-4">
+                    <div class="font-semibold text-gray-900 flex items-center">
+                      <i class="fas fa-receipt text-blue-500 mr-2"></i>
+                      Users
+                    </div>
+                  </td>
+                  <td class="p-4 text-gray-700">
+                    <button>True</button>
+                  </td>
+                  <td class="p-4 text-gray-700 font-medium">Counter 2</td>
+                  <td class="p-4">
+                    <span class="status-badge px-3 py-1.5 rounded-full bg-yellow-50 text-yellow-700">Pending</span>
+                  </td>
+                  <td class="p-4 text-gray-700">
+                    <div class="flex items-center">
+                      <i class="fas fa-clock text-yellow-500 mr-2 text-xs"></i>
+                      14 min
+                    </div>
+                  </td>
+                  <td class="p-4 text-gray-700">2025-12-10</td>
+                </tr>
+
+                <tr class="table-row">
+                  <td class="p-4">
+                    <div class="font-semibold text-gray-900 flex items-center">
+                      <i class="fas fa-headset text-green-500 mr-2"></i>
+                      S102
+                    </div>
+                  </td>
+                  <td class="p-4 text-gray-700">Support</td>
+                  <td class="p-4 text-gray-700 font-medium">Counter 4</td>
+                  <td class="p-4">
+                    <span class="status-badge px-3 py-1.5 rounded-full bg-green-50 text-green-700">Completed</span>
+                  </td>
+                  <td class="p-4 text-gray-700">
+                    <div class="flex items-center">
+                      <i class="fas fa-check-circle text-green-500 mr-2 text-xs"></i>
+                      8 min
+                    </div>
+                  </td>
+                  <td class="p-4 text-gray-700">2025-12-10</td>
+                </tr>
+
+                <tr class="table-row">
+                  <td class="p-4">
+                    <div class="font-semibold text-gray-900 flex items-center">
+                      <i class="fas fa-sync-alt text-purple-500 mr-2"></i>
+                      R078
+                    </div>
+                  </td>
+                  <td class="p-4 text-gray-700">Renewal</td>
+                  <td class="p-4 text-gray-700 font-medium">Counter 6</td>
+                  <td class="p-4">
+                    <span class="status-badge px-3 py-1.5 rounded-full bg-blue-50 text-blue-700">Serving</span>
+                  </td>
+                  <td class="p-4 text-gray-700">
+                    <div class="flex items-center">
+                      <i class="fas fa-user-clock text-blue-500 mr-2 text-xs"></i>
+                      22 min
+                    </div>
+                  </td>
+                  <td class="p-4 text-gray-700">2025-12-10</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="p-4 border-t border-gray-200 flex justify-between items-center">
+            <div class="text-sm text-gray-600">Showing 3 of 128 tickets</div>
+            <div class="flex items-center space-x-1">
+              <button
+                class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
+                <i class="fas fa-chevron-left text-xs"></i>
+              </button>
+              <button
+                class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-900 text-white text-sm">1</button>
+              <button
+                class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm">2</button>
+              <button
+                class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm">3</button>
+              <button
+                class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
+                <i class="fas fa-chevron-right text-xs"></i>
+              </button>
+            </div>
+          </div>
+
+
+
+        </div>
+
+
+
+        <!-- Footer -->
+        <div class="mt-8 text-center text-gray-500 text-sm">
+          <p>Queue Management System • Last updated: Today, 14:30</p>
+          <p class="mt-1 text-xs text-gray-400">© 2025 Admin Dashboard. All rights reserved.</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL: Add New Service -->
+  <div id="modalOverlay" class="modal-overlay">
+    <div class="modal-container">
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900">Add New Service</h3>
+            <p class="text-sm text-gray-600 mt-1">Configure a new service for your queue system</p>
+          </div>
+          <button id="closeModalBtn" class="text-gray-400 hover:text-gray-500 p-1 rounded-lg hover:bg-gray-100">
+            <i class="fas fa-times text-lg"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body">
+        <form id="addServiceForm">
+          <div class="form-group">
+            <label class="form-label" for="serviceName">
+              <i class="fas fa-tag mr-1 text-gray-500"></i>
+              Service Name
+            </label>
+            <input type="text" id="serviceName" class="form-input" placeholder="e.g., Registration, Consultation"
+              required>
+            <p class="text-xs text-gray-500 mt-1">Enter a descriptive name for the service</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="serviceDescription">
+              <i class="fas fa-align-left mr-1 text-gray-500"></i>
+              Description
+            </label>
+            <textarea id="serviceDescription" class="form-input" rows="3"
+              placeholder="Brief description of what this service provides..."></textarea>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="form-group">
+              <label class="form-label" for="counterStart">
+                <i class="fas fa-hashtag mr-1 text-gray-500"></i>
+                Counter Start
+              </label>
+              <select id="counterStart" class="form-input" required>
+                <option value="">Select start</option>
+                <option value="1">Counter 1</option>
+                <option value="2">Counter 2</option>
+                <option value="3">Counter 3</option>
+                <option value="4">Counter 4</option>
+                <option value="5">Counter 5</option>
+                <option value="6">Counter 6</option>
+                <option value="7">Counter 7</option>
+                <option value="8">Counter 8</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="counterEnd">
+                <i class="fas fa-hashtag mr-1 text-gray-500"></i>
+                Counter End
+              </label>
+              <select id="counterEnd" class="form-input" required>
+                <option value="">Select end</option>
+                <option value="1">Counter 1</option>
+                <option value="2">Counter 2</option>
+                <option value="3">Counter 3</option>
+                <option value="4">Counter 4</option>
+                <option value="5">Counter 5</option>
+                <option value="6">Counter 6</option>
+                <option value="7">Counter 7</option>
+                <option value="8">Counter 8</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="serviceIcon">
+              <i class="fas fa-icons mr-1 text-gray-500"></i>
+              Service Icon
+            </label>
+            <div class="flex items-center space-x-4 mt-2">
+              <div
+                class="icon-option flex flex-col items-center cursor-pointer p-3 rounded-lg border border-gray-200 hover:border-blue-300">
+                <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center mb-2">
+                  <i class="fas fa-file-invoice-dollar text-blue-600"></i>
+                </div>
+                <span class="text-xs text-gray-600">Billing</span>
+              </div>
+              <div
+                class="icon-option flex flex-col items-center cursor-pointer p-3 rounded-lg border border-gray-200 hover:border-blue-300">
+                <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center mb-2">
+                  <i class="fas fa-headset text-green-600"></i>
+                </div>
+                <span class="text-xs text-gray-600">Support</span>
+              </div>
+              <div
+                class="icon-option flex flex-col items-center cursor-pointer p-3 rounded-lg border border-gray-200 hover:border-blue-300">
+                <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center mb-2">
+                  <i class="fas fa-sync-alt text-purple-600"></i>
+                </div>
+                <span class="text-xs text-gray-600">Renewal</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="processingTime">
+              <i class="fas fa-clock mr-1 text-gray-500"></i>
+              Estimated Processing Time (minutes)
+            </label>
+            <input type="number" id="processingTime" class="form-input" min="1" max="60" placeholder="15" required>
+          </div>
+
+          <div class="form-group">
+            <div class="flex items-center">
+              <input type="checkbox" id="isActive"
+                class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" checked>
+              <label for="isActive" class="ml-2 text-sm text-gray-700">
+                Service is active (available for ticket generation)
+              </label>
+            </div>
+          </div>
+
+
+          <h2>Editable Python (CodeMirror)</h2>
+          <textarea id="code" name="code">
+# Type Python here
+def add(a, b):
+    return a + b
+
+print(add(2, 3))
+  </textarea>
+          <button id="get">Get code</button>
+          <pre id="out"></pre>
+        </form>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer">
+        <button id="cancelBtn" type="button"
+          class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition">
+          Cancel
+        </button>
+        <button id="submitBtn" type="button"
+          class="px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-black rounded-lg transition flex items-center">
+          <i class="fas fa-plus mr-2"></i>
+          Create Service
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.14/mode/python/python.min.js"></script>
+  <script>
+    var editor = CodeMirror.fromTextArea(document.getElementById('code'), {
+      mode: "text/x-python",
+      lineNumbers: true,
+      indentUnit: 4,
+      tabSize: 4,
+      matchBrackets: true,
+      autofocus: true
+    });
+
+
+
+
+    document.getElementById('get').addEventListener('click', function () {
+      document.getElementById('out').textContent = editor.getValue();
+      alert(editor)
+    });
+  </script>
+  <script>
+    // Simple hover effects
+    document.querySelectorAll('.stat-card, .service-card').forEach(card => {
+      card.addEventListener('mouseenter', function () {
+        this.style.transform = 'translateY(-2px)';
+      });
+
+      card.addEventListener('mouseleave', function () {
+        this.style.transform = 'translateY(0)';
+      });
+    });
+
+    // Modal functionality
+    const modalOverlay = document.getElementById('modalOverlay');
+    const openModalBtn = document.getElementById('openModalBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const addServiceForm = document.getElementById('addServiceForm');
+
+    // Open modal
+    openModalBtn.addEventListener('click', () => {
+      modalOverlay.classList.add('active');
+      document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    });
+
+    // Close modal functions
+    const closeModal = () => {
+      modalOverlay.classList.remove('active');
+      document.body.style.overflow = ''; // Restore scrolling
+    };
+
+    closeModalBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+
+    // Close modal when clicking outside
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) {
+        closeModal();
+      }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+        closeModal();
+      }
+    });
+
+    // Icon selection
+    document.querySelectorAll('.icon-option').forEach(icon => {
+      icon.addEventListener('click', function () {
+        // Remove active class from all icons
+        document.querySelectorAll('.icon-option').forEach(i => {
+          i.classList.remove('border-blue-500', 'bg-blue-50');
+        });
+
+        // Add active class to clicked icon
+        this.classList.add('border-blue-500', 'bg-blue-50');
+      });
+    });
+
+    // Form submission
+    submitBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+
+      // Get form values
+      const serviceName = document.getElementById('serviceName').value;
+      const description = document.getElementById('serviceDescription').value;
+      const counterStart = document.getElementById('counterStart').value;
+      const counterEnd = document.getElementById('counterEnd').value;
+      const processingTime = document.getElementById('processingTime').value;
+      const isActive = document.getElementById('isActive').checked;
+
+      // Simple validation
+      if (!serviceName || !counterStart || !counterEnd || !processingTime) {
+        alert('Please fill in all required fields');
+        return;
+      }
+
+      if (parseInt(counterEnd) < parseInt(counterStart)) {
+        alert('Counter end must be greater than or equal to counter start');
+        return;
+      }
+
+      // In a real application, you would send this data to your server
+      console.log('New Service Details:', {
+        serviceName,
+        description,
+        counterRange: `Counter ${counterStart}-${counterEnd}`,
+        processingTime: `${processingTime} minutes`,
+        isActive
+      });
+
+      // Show success message
+      alert('Service created successfully!');
+
+      // Close modal
+      closeModal();
+
+      // Reset form
+      addServiceForm.reset();
+
+      // Remove active icon selection
+      document.querySelectorAll('.icon-option').forEach(i => {
+        i.classList.remove('border-blue-500', 'bg-blue-50');
+      });
+    });
+
+    // Form submission on Enter key
+    addServiceForm.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        submitBtn.click();
+      }
+    });
+  </script>
+
+</body>
+
 </html>
