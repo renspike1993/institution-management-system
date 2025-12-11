@@ -192,7 +192,7 @@
         <div class="w-8 h-8 rounded-lg bg-gray-900 flex items-center justify-center mr-3">
           <i class="fas fa-crown text-white text-sm"></i>
         </div>
-        <h2 class="text-xl font-bold text-gray-900">Developer</h2>
+        <h2 class="text-xl font-bold text-gray-900">Developer Mode</h2>
       </div>
 
       <nav class="space-y-1">
@@ -346,7 +346,6 @@
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-
             <div class="service-card group bg-white p-5 rounded-xl cursor-pointer">
               <div class="flex items-center justify-between mb-3">
                 <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
@@ -395,244 +394,318 @@
           </div>
         </div>
 
-        <!-- TABLE -->
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <div class="p-5 border-b border-gray-200">
-            <div class="flex justify-between items-center">
-              <div>
-                <h2 class="text-lg font-semibold text-gray-900">Recent Tickets</h2>
-                <p class="text-sm text-gray-600">Last updated: Today, 14:30</p>
+
+        <div class="mb-10">
+          <!-- TABLE -->
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-gray-200">
+              <div class="flex justify-between items-center">
+                <div>
+                  <h2 class="text-lg font-semibold text-gray-900"> Routes</h2>
+                  <p class="text-sm text-gray-600">Last updated: Today, 14:30</p>
+                </div>
+                <button class="text-sm font-medium text-gray-700 hover:text-gray-900 flex items-center">
+                  <i class="fas fa-download mr-2"></i> Export
+                </button>
               </div>
-              <button class="text-sm font-medium text-gray-700 hover:text-gray-900 flex items-center">
-                <i class="fas fa-download mr-2"></i> Export
-              </button>
             </div>
-          </div>
 
-          <div class="overflow-x-auto">
-            <table class="w-full">
-              <thead class="bg-gray-50 text-gray-600 text-xs font-medium uppercase tracking-wider">
-                <tr>
-                  <th class="p-4 text-left">Ticket</th>
-                  <th class="p-4 text-left">Service</th>
-                  <th class="p-4 text-left">Counter</th>
-                  <th class="p-4 text-left">Status</th>
-                  <th class="p-4 text-left">Wait Time</th>
-                  <th class="p-4 text-left">Date</th>
-                </tr>
-              </thead>
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead class="bg-gray-50 text-gray-600 text-xs font-medium uppercase tracking-wider">
+                  <tr>
+                    <th class="p-4 text-center">Ticket</th>
+                    <th class="p-4 text-center">Service</th>
+                    <th class="p-4 text-center">Counter</th>
+                    <th class="p-4 text-center">Status</th>
+                    <th class="p-4 text-center">Wait Time</th>
+                    <th class="p-4 text-center">Date</th>
+                  </tr>
+                </thead>
 
-              <tbody class="text-sm">
-                <tr class="table-row">
-                  <td class="p-4">
-                    <div class="font-semibold text-gray-900 flex items-center">
-                      <i class="fas fa-receipt text-blue-500 mr-2"></i>
-                      A045
-                    </div>
-                  </td>
-                  <td class="p-4 text-gray-700">Billing</td>
-                  <td class="p-4 text-gray-700 font-medium">Counter 2</td>
-                  <td class="p-4">
-                    <span class="status-badge px-3 py-1.5 rounded-full bg-yellow-50 text-yellow-700">Pending</span>
-                  </td>
-                  <td class="p-4 text-gray-700">
-                    <div class="flex items-center">
-                      <i class="fas fa-clock text-yellow-500 mr-2 text-xs"></i>
-                      14 min
-                    </div>
-                  </td>
-                  <td class="p-4 text-gray-700">2025-12-10</td>
-                </tr>
+                <tbody class="text-sm">
+                  <tr class="table-row">
+                    <td class="p-4">
+                      <div class="font-semibold text-gray-900 flex items-center">
+                        <i class="fas fa-receipt text-blue-500 mr-2"></i>
+                        A045
+                      </div>
+                    </td>
+                    <td class="p-4 text-gray-700">Billing</td>
+                    <td class="p-4 text-gray-700 font-medium">Counter 2</td>
+                    <td class="p-4">
+                      <span class="status-badge px-3 py-1.5 rounded-full bg-yellow-50 text-yellow-700">Pending</span>
+                    </td>
+                    <td class="p-4 text-gray-700">
+                      <div class="flex items-center">
+                        <i class="fas fa-clock text-yellow-500 mr-2 text-xs"></i>
+                        14 min
+                      </div>
+                    </td>
+                    <td class="p-4 text-gray-700">2025-12-10</td>
+                  </tr>
 
-                <tr class="table-row">
-                  <td class="p-4">
-                    <div class="font-semibold text-gray-900 flex items-center">
-                      <i class="fas fa-headset text-green-500 mr-2"></i>
-                      S102
-                    </div>
-                  </td>
-                  <td class="p-4 text-gray-700">Support</td>
-                  <td class="p-4 text-gray-700 font-medium">Counter 4</td>
-                  <td class="p-4">
-                    <span class="status-badge px-3 py-1.5 rounded-full bg-green-50 text-green-700">Completed</span>
-                  </td>
-                  <td class="p-4 text-gray-700">
-                    <div class="flex items-center">
-                      <i class="fas fa-check-circle text-green-500 mr-2 text-xs"></i>
-                      8 min
-                    </div>
-                  </td>
-                  <td class="p-4 text-gray-700">2025-12-10</td>
-                </tr>
+                  <tr class="table-row">
+                    <td class="p-4">
+                      <div class="font-semibold text-gray-900 flex items-center">
+                        <i class="fas fa-headset text-green-500 mr-2"></i>
+                        S102
+                      </div>
+                    </td>
+                    <td class="p-4 text-gray-700">Support</td>
+                    <td class="p-4 text-gray-700 font-medium">Counter 4</td>
+                    <td class="p-4">
+                      <span class="status-badge px-3 py-1.5 rounded-full bg-green-50 text-green-700">Completed</span>
+                    </td>
+                    <td class="p-4 text-gray-700">
+                      <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2 text-xs"></i>
+                        8 min
+                      </div>
+                    </td>
+                    <td class="p-4 text-gray-700">2025-12-10</td>
+                  </tr>
 
-                <tr class="table-row">
-                  <td class="p-4">
-                    <div class="font-semibold text-gray-900 flex items-center">
-                      <i class="fas fa-sync-alt text-purple-500 mr-2"></i>
-                      R078
-                    </div>
-                  </td>
-                  <td class="p-4 text-gray-700">Renewal</td>
-                  <td class="p-4 text-gray-700 font-medium">Counter 6</td>
-                  <td class="p-4">
-                    <span class="status-badge px-3 py-1.5 rounded-full bg-blue-50 text-blue-700">Serving</span>
-                  </td>
-                  <td class="p-4 text-gray-700">
-                    <div class="flex items-center">
-                      <i class="fas fa-user-clock text-blue-500 mr-2 text-xs"></i>
-                      22 min
-                    </div>
-                  </td>
-                  <td class="p-4 text-gray-700">2025-12-10</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                  <tr class="table-row">
+                    <td class="p-4">
+                      <div class="font-semibold text-gray-900 flex items-center">
+                        <i class="fas fa-sync-alt text-purple-500 mr-2"></i>
+                        R078
+                      </div>
+                    </td>
+                    <td class="p-4 text-gray-700">Renewal</td>
+                    <td class="p-4 text-gray-700 font-medium">Counter 6</td>
+                    <td class="p-4">
+                      <span class="status-badge px-3 py-1.5 rounded-full bg-blue-50 text-blue-700">Serving</span>
+                    </td>
+                    <td class="p-4 text-gray-700">
+                      <div class="flex items-center">
+                        <i class="fas fa-user-clock text-blue-500 mr-2 text-xs"></i>
+                        22 min
+                      </div>
+                    </td>
+                    <td class="p-4 text-gray-700">2025-12-10</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
-          <div class="p-4 border-t border-gray-200 flex justify-between items-center">
-            <div class="text-sm text-gray-600">Showing 3 of 128 tickets</div>
-            <div class="flex items-center space-x-1">
-              <button
-                class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
-                <i class="fas fa-chevron-left text-xs"></i>
-              </button>
-              <button
-                class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-900 text-white text-sm">1</button>
-              <button
-                class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm">2</button>
-              <button
-                class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm">3</button>
-              <button
-                class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
-                <i class="fas fa-chevron-right text-xs"></i>
-              </button>
+            <div class="p-4 border-t border-gray-200 flex justify-between items-center">
+              <div class="text-sm text-gray-600">Showing 3 of 128 tickets</div>
+              <div class="flex items-center space-x-1">
+                <button
+                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
+                  <i class="fas fa-chevron-left text-xs"></i>
+                </button>
+                <button
+                  class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-900 text-white text-sm">1</button>
+                <button
+                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm">2</button>
+                <button
+                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm">3</button>
+                <button
+                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
+                  <i class="fas fa-chevron-right text-xs"></i>
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
 
-
-        <!-- Adjuscency Matrix -->
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          <div class="p-5 border-b border-gray-200">
-            <div class="flex justify-between items-center">
-              <div>
-                <h2 class="text-lg font-semibold text-gray-900">ERD (Adjuscentcy Matrix)</h2>
-                <p class="text-sm text-gray-600">Last updated: Today, 14:30</p>
+        <div class="mb-10">
+          <!-- Adjuscency Matrix -->
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-gray-200">
+              <div class="flex justify-between items-center">
+                <div>
+                  <h2 class="text-lg font-semibold text-gray-900">ERD (Adjacency Matrix)</h2>
+                  <p class="text-sm text-gray-600">Database Tabular Visualization</p>
+                </div>
+                <button class="text-sm font-medium text-gray-700 hover:text-gray-900 flex items-center">
+                  <i class="fas fa-plus mr-2"></i> Model 
+                </button>
               </div>
-              <button class="text-sm font-medium text-gray-700 hover:text-gray-900 flex items-center">
-                <i class="fas fa-download mr-2"></i> Export
-              </button>
             </div>
-          </div>
 
-          <div class="overflow-x-auto">
-            <table class="w-full">
-              <thead class="bg-gray-50 text-gray-600 text-xs font-medium uppercase tracking-wider">
-                <tr>
-                  <th class="p-4 text-left"> </th>
-                  <th class="p-4 text-left">Users</th>
-                  <th class="p-4 text-left">Counter</th>
-                  <th class="p-4 text-left">Status</th>
-                  <th class="p-4 text-left">Wait Time</th>
-                  <th class="p-4 text-left">Date</th>
-                </tr>
-              </thead>
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead class="bg-gray-50 text-gray-600 text-xs font-medium tracking-wider">
+                  <tr>
+                    <th class="p-4 text-center">Models Y=(FK), X =(PK)</th>
+                    <th class="p-4 text-center">Users</th>
+                    <th class="p-4 text-center">Profile</th>
+                    <th class="p-4 text-center">Records</th>
+                    <th class="p-4 text-center">AcademicRecords</th>
+                    <th class="p-4 text-center">Curriculums</th>
+                  </tr>
+                </thead>
 
-              <tbody class="text-sm">
-                <tr class="table-row">
-                  <td class="p-4">
-                    <div class="font-semibold text-gray-900 flex items-center">
-                      <i class="fas fa-receipt text-blue-500 mr-2"></i>
-                      Users
-                    </div>
-                  </td>
-                  <td class="p-4 text-gray-700">
-                    <button>True</button>
-                  </td>
-                  <td class="p-4 text-gray-700 font-medium">Counter 2</td>
-                  <td class="p-4">
-                    <span class="status-badge px-3 py-1.5 rounded-full bg-yellow-50 text-yellow-700">Pending</span>
-                  </td>
-                  <td class="p-4 text-gray-700">
-                    <div class="flex items-center">
-                      <i class="fas fa-clock text-yellow-500 mr-2 text-xs"></i>
-                      14 min
-                    </div>
-                  </td>
-                  <td class="p-4 text-gray-700">2025-12-10</td>
-                </tr>
+                <tbody class="text-sm">
+                  <tr class="table-row">
+                    <td class="p-4">
+                      <div class="font-semibold text-gray-900 flex items-center">
+                        <i class="fas fa-receipt text-blue-500 mr-2"></i>
+                        Users
+                      </div>
+                    </td>
+                    <td class="p-4 text-gray-700">
+                      <button
+                        onclick="if(this.innerHTML!='False'){this.innerHTML='False';}else{this.innerHTML='True'}">True</button>
+                    </td>
+                    <td class="p-4 text-gray-700 font-medium">Counter 2</td>
+                    <td class="p-4">
+                      <span class="status-badge px-3 py-1.5 rounded-full bg-yellow-50 text-yellow-700">Pending</span>
+                    </td>
+                    <td class="p-4 text-gray-700">
+                      <div class="flex items-center">
+                        <i class="fas fa-clock text-yellow-500 mr-2 text-xs"></i>
+                        14 min
+                      </div>
+                    </td>
+                    <td class="p-4 text-gray-700">2025-12-10</td>
+                  </tr>
 
-                <tr class="table-row">
-                  <td class="p-4">
-                    <div class="font-semibold text-gray-900 flex items-center">
-                      <i class="fas fa-headset text-green-500 mr-2"></i>
-                      S102
-                    </div>
-                  </td>
-                  <td class="p-4 text-gray-700">Support</td>
-                  <td class="p-4 text-gray-700 font-medium">Counter 4</td>
-                  <td class="p-4">
-                    <span class="status-badge px-3 py-1.5 rounded-full bg-green-50 text-green-700">Completed</span>
-                  </td>
-                  <td class="p-4 text-gray-700">
-                    <div class="flex items-center">
-                      <i class="fas fa-check-circle text-green-500 mr-2 text-xs"></i>
-                      8 min
-                    </div>
-                  </td>
-                  <td class="p-4 text-gray-700">2025-12-10</td>
-                </tr>
+                  <tr class="table-row">
+                    <td class="p-4">
+                      <div class="font-semibold text-gray-900 flex items-center">
+                        <i class="fas fa-headset text-green-500 mr-2"></i>
+                        Profile
+                      </div>
+                    </td>
+                    <td class="p-4 text-gray-700">Support</td>
+                    <td class="p-4 text-gray-700 font-medium"> <button
+                        onclick="if(this.innerHTML!='False'){this.innerHTML='False';}else{this.innerHTML='True'}">True</button>
+                    </td>
+                    <td class="p-4">
+                      <span class="status-badge px-3 py-1.5 rounded-full bg-green-50 text-green-700">Completed</span>
+                    </td>
+                    <td class="p-4 text-gray-700">
+                      <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2 text-xs"></i>
+                        8 min
+                      </div>
+                    </td>
+                    <td class="p-4 text-gray-700">2025-12-10</td>
+                  </tr>
 
-                <tr class="table-row">
-                  <td class="p-4">
-                    <div class="font-semibold text-gray-900 flex items-center">
-                      <i class="fas fa-sync-alt text-purple-500 mr-2"></i>
-                      R078
-                    </div>
-                  </td>
-                  <td class="p-4 text-gray-700">Renewal</td>
-                  <td class="p-4 text-gray-700 font-medium">Counter 6</td>
-                  <td class="p-4">
-                    <span class="status-badge px-3 py-1.5 rounded-full bg-blue-50 text-blue-700">Serving</span>
-                  </td>
-                  <td class="p-4 text-gray-700">
-                    <div class="flex items-center">
-                      <i class="fas fa-user-clock text-blue-500 mr-2 text-xs"></i>
-                      22 min
-                    </div>
-                  </td>
-                  <td class="p-4 text-gray-700">2025-12-10</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                  <tr class="table-row">
+                    <td class="p-4">
+                      <div class="font-semibold text-gray-900 flex items-center">
+                        <i class="fas fa-sync-alt text-purple-500 mr-2"></i>
+                        Records
+                      </div>
+                    </td>
+                    <td class="p-4 text-gray-700">True</td>
+                    <td class="p-4 text-gray-700 font-medium">True</td>
+                    <td class="p-4">
+                      <span class="status-badge px-3 py-1.5 rounded-full bg-blue-50 text-blue-700">True</span>
+                    </td>
+                    <td class="p-4 text-gray-700">
+                      <div class="flex items-center">
+                        <i class="fas fa-user-clock text-blue-500 mr-2 text-xs"></i>
+                        True
+                      </div>
+                    </td>
+                    <td class="p-4 text-gray-700">True</td>
+                  </tr>
 
-          <div class="p-4 border-t border-gray-200 flex justify-between items-center">
-            <div class="text-sm text-gray-600">Showing 3 of 128 tickets</div>
-            <div class="flex items-center space-x-1">
-              <button
-                class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
-                <i class="fas fa-chevron-left text-xs"></i>
-              </button>
-              <button
-                class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-900 text-white text-sm">1</button>
-              <button
-                class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm">2</button>
-              <button
-                class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm">3</button>
-              <button
-                class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
-                <i class="fas fa-chevron-right text-xs"></i>
-              </button>
+                  <tr class="table-row">
+                    <td class="p-4">
+                      <div class="font-semibold text-gray-900 flex items-center">
+                        <i class="fas fa-sync-alt text-purple-500 mr-2"></i>
+                        AcademicRecords
+                      </div>
+                    </td>
+                    <td class="p-4 text-gray-700">Renewal</td>
+                    <td class="p-4 text-gray-700 font-medium">AcademicRecords</td>
+                    <td class="p-4">
+                      <span class="status-badge px-3 py-1.5 rounded-full bg-blue-50 text-blue-700">Serving</span>
+                    </td>
+                    <td class="p-4 text-gray-700">
+                      <div class="flex items-center">
+                        <i class="fas fa-user-clock text-blue-500 mr-2 text-xs"></i>
+                        22 min
+                      </div>
+                    </td>
+                    <td class="p-4 text-gray-700">2025-12-10</td>
+                  </tr>
+
+
+                  <tr class="table-row">
+                    <td class="p-4">
+                      <div class="font-semibold text-gray-900 flex items-center">
+                        <i class="fas fa-sync-alt text-purple-500 mr-2"></i>
+                        Curriculums
+                      </div>
+                    </td>
+                    <td class="p-4 text-gray-700">Renewal</td>
+                    <td class="p-4 text-gray-700 font-medium">Counter 6</td>
+                    <td class="p-4">
+                      <span class="status-badge px-3 py-1.5 rounded-full bg-blue-50 text-blue-700">Serving</span>
+                    </td>
+                    <td class="p-4 text-gray-700">
+                      <div class="flex items-center">
+                        <i class="fas fa-user-clock text-blue-500 mr-2 text-xs"></i>
+                        22 min
+                      </div>
+                    </td>
+                    <td class="p-4 text-gray-700">2025-12-10</td>
+                  </tr>
+
+                </tbody>
+              </table>
             </div>
+
+            <div class="p-4 border-t border-gray-200 flex justify-between items-center">
+              <div class="text-sm text-gray-600">Showing 3 of 128 tickets</div>
+              <div class="flex items-center space-x-1">
+                <button
+                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
+                  <i class="fas fa-chevron-left text-xs"></i>
+                </button>
+                <button
+                  class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-900 text-white text-sm">1</button>
+                <button
+                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm">2</button>
+                <button
+                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm">3</button>
+                <button
+                  class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
+                  <i class="fas fa-chevron-right text-xs"></i>
+                </button>
+              </div>
+            </div>
+
+
+
           </div>
-
-
-
         </div>
+        <script>
+          document.addEventListener("DOMContentLoaded", () => {
+            document.querySelectorAll("tbody tr").forEach((row) => {
+              const cells = row.querySelectorAll("td");
 
+              cells.forEach((cell, index) => {
+                // Skip label column (0)
+                // Make center intersected columns toggleable (1 to 3 here)
+                // Skip last columns (4+)
+                if (index >= 1 && index <= 3) {
+                  // Center text
+                  cell.classList.add("text-center", "cursor-pointer");
 
+                  // Make it toggle only if plain text
+                  cell.addEventListener("click", () => {
+                    let t = cell.innerText.trim();
+                    if (t === "True") cell.innerText = "False";
+                    else if (t === "False") cell.innerText = "True";
+                    else cell.innerText = "True"; // empty → True
+                  });
+                }
+              });
+            });
+          });
+        </script>
 
         <!-- Footer -->
         <div class="mt-8 text-center text-gray-500 text-sm">
